@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+ <title>Dime
+ </title>
+  <link rel="stylesheet" href="/static/style.css">
+    <!-- 创建一个文件夹 里放一个.css为后缀的文件 是文字渲染 -->
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <h1>FinView
+      </h1>
+      <nav><a href="/">主页</a> | <a href="/add">钱钱又飞走了</a> | <a href="/export">导出</a></nav>
+    </header>
+
+    <main>
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+    </footer>
+  </div>
+</body>
+</html>

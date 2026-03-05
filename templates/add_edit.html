@@ -1,0 +1,134 @@
+<!--  -->
+{% extends 'base.html' %}
+{% block content %}
+<meta charset="UTF-8">
+<!-- 告诉浏览器"用 UTF-8 编码写的，用 UTF-8 来读取显示它" -->
+
+<!-- 继承自 base.html 这个基础模板 -->
+<div class="form-container">
+    <!-- 创建了一个div容器区块 并命名 -->
+  <h2>{{ '编辑' if expense else '新增' }}消费记录</h2>
+    <!-- {{ ... }} 是 Flask 的模板语法，表示在 HTML 中嵌入 Python 代码 -->
+    <!-- if有expense 出现编辑，if没有 出现新增 -->
+  <form method="post" class="form" id="expense-form">
+      <!-- <form>：表单标签，表示这是一个输入区域 -->
+      <!-- method="post"：指定提交方式为 POST -->
+      <!-- id="expense-form"：标识符 -->
+
+    <div class="form-group">
+      <label>📅 日期</label>
+      <div class="date-input-group">
+        <input type="date" name="date" value="{{ expense['date'] if expense else '' }}" required>
+          <!-- "date"是一个日期选择框，命名为"date" -->
+          <!-- if编辑已有记录 显示原来的日期，如果没有 显示空白 -->
+          <!-- required标记为必填项 -->
+        <button type="button" class="btn-primary" onclick="setToday()">今天</button>
+          <!-- "btn-sm"(small button) -->
+      </div>
+    </div>
+
+    <!-- 类别选择 -->
+    <div class="form-group">
+      <label>🏷️ 类别</label>
+      <div class="category-wrapper">
+        <select name="category" id="category" required>
+          <!-- <select>：创建下拉菜单 -->
+          <option value="">请选择类别</option>
+          <!-- 如果不设这个空选项，可能会默认选中第一个类别 -->
+          <!-- value="" 会被视为"未选择"，阻止表单提交 -->
+          {% for c in categories %}
+          <!-- 循环语句 -->
+          <option value="{{c}}" {% if expense selected="selected"{% endif %}>{{c}}</option>
+          <!-- {{ }} 告诉Flask："这里要插入动态数据" -->
+          {% endfor %}
+        </select>
+        <button type="button" class="btn-primary" onclick="quickAddCategory()">+新类别</button>
+          <!-- quickAddCategory函数 作用是弹出一个输入框让用户输入新类别并保存 -->
+      </div>
+    </div>
+
+    <!-- 金额输入 -->
+    <div class="form-group">
+      <label>💸 金额</label>
+      <div class="amount-input-wrapper">
+        <input type="number" step="0.01" name="amount"
+               value="{{ expense['amount'] if expense else '' }}" required> ¥
+      </div>
+    </div>
+
+    <!-- 描述 -->
+    <div class="form-group">
+      <label>📝 描述</label>
+      <input type="text" name="description" id="description"
+             value="{{ expense['description'] if expense else '' }}"
+             placeholder="例：麦当劳、滴滴打车"
+             onkeyup="suggestCategory(this.value)">
+      <!-- 智能推荐 -->
+      <div id="suggestion-area" class="suggestion-area"></div>
+    </div>
+
+    <!-- 保存和返回 -->
+    <div class="form-actions">
+      <button type="submit" class="btn-primary">💾 保存记录</button>
+      <a href="{{ url_for('index') }}" class="btn-secondary">🔙 返回</a>
+      <!-- <a>创建超链接 -->
+    </div>
+  </form>
+</div>
+
+<script>
+function setToday() {
+  const today = new Date().toISOString().split('T')[0];
+  document.querySelector('input[name="date"]').value = today;
+}
+
+function setAmount(amount) {
+  document.querySelector('input[name="amount"]').value = amount;
+}
+
+function suggestCategory(description) {
+  if(description.length < 2) return;
+
+  fetch(`/api/suggest-category?desc=${description}`)
+    .then(response => response.json())
+    .then(data => {
+      if(data.suggested) {
+        showSuggestion(data.suggested);
+      }
+    });
+}
+</script>
+
+<style>
+/* 添加一些基本样式 */
+.form-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+}
+.form-group {
+  margin-bottom: 20px;
+}
+.btn-sm {
+  padding: 5px 10px;
+  margin-left: 5px;
+}
+.amount-quick-select {
+  margin-top: 5px;
+}
+.amount-option {
+  display: inline-block;
+  padding: 3px 10px;
+  margin-right: 5px;
+  background: #f0f0f0;
+  border-radius: 3px;
+  cursor: pointer;
+}
+.suggestion-area {
+  margin-top: 5px;
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 4px;
+}
+</style>
+{% endblock %}
