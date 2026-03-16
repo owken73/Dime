@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- 页面内容 -->
+
+
+<!-- 底部小箭头 - 放在右侧内容区底部 -->
+<div style="position: fixed; bottom: 20px; left: 17%; right: 0; display: flex; justify-content: space-between; padding: 0 20px;">
+    <a href="/stats/c" style="color: #b0b0b0; text-decoration: none; font-size: 10px;">
+        <i class="fas fa-chevron-left"></i>
+    </a>
+    <span style="color: #666666; font-size: 0.8rem;">● · ·</span>
+    <a href="/stats/b" style="color: #b0b0b0; text-decoration: none; font-size: 10px;">
+        <i class="fas fa-chevron-right"></i>
+    </a>
+</div>
+{% endblock %}
