@@ -11,21 +11,21 @@
     <!-- Font Awesome 图标库 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-    <!-- 全局样式（所有页面共用） -->
+    <!-- 全局样式 -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
-    <!-- 页面专属样式（根据当前路由动态加载） -->
-    {% if request.path == '/stats' %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/stats.css') }}">
-    {% elif request.path == '/stats/a' %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/stats.css') }}">
-    {% elif request.path == '/stats/b' %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/stats.css') }}">
-    {% elif request.path == '/stats/c' %}
+    <!-- add.css 全局加载（因为记一笔面板所有页面都需要） -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/add.css') }}">
+    
+    <!-- success.css 全局加载（打印机模型所有页面都需要） -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/success.css') }}">
+
+    <!-- 页面专属样式 -->
+    {% if request.path == '/stats' or request.path == '/stats/a' or request.path == '/stats/b' or request.path == '/stats/c' %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/stats.css') }}">
     {% elif request.path == '/flow' %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/flow.css') }}">
-    {% elif request.path == '/assets' %}
+    {% elif request.path == '/assets' or request.path == '/assets/a' or request.path == '/assets/b' or request.path == '/assets/c' %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/assets.css') }}">
     {% elif request.path == '/omg' %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/omg.css') }}">
@@ -33,8 +33,6 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
     {% elif request.path == '/settings' %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/settings.css') }}">
-    {% elif request.path == '/add' %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/add.css') }}">
     {% endif %}
 </head>
 <body>
@@ -47,10 +45,11 @@
                 <h4 class="mb-0">Dime</h4>
             </div>
 
-            <!-- 导航菜单（带抽屉效果） -->
+            <!-- 导航菜单 -->
             <nav class="nav flex-column flex-grow-1">
                 <!-- 记一笔 -->
-                <a class="add-button {% if request.path == '/add' %}active{% endif %}" href="/add">
+                <a class="add-button {% if request.path == '/add' %}active{% endif %}" href="#"
+                   onclick="toggleAddPanel(event); return false;">
                     <div class="add-icon">+</div>
                 </a>
 
@@ -59,9 +58,9 @@
                     <i class="fas fa-list-ul"></i> 流水
                 </a>
 
-                <!-- 统计（点击展开/折叠） -->
+                <!-- 统计 -->
                 <div>
-                    <a class="nav-link {% if request.path == '/stats' or request.path == '/stats/a' or request.path == '/stats/b' or request.path == '/stats/c' %}active{% endif %}"
+                    <a class="nav-link {% if request.path == '/stats' or request.path == '/stats/a' or request.path == '/stats/b' %}active{% endif %}"
                        href="#"
                        onclick="toggleStatsSubmenu(event)"
                        data-path="/stats"
@@ -69,28 +68,22 @@
                         <i class="fas fa-chart-pie"></i> 统计
                     </a>
 
-                    <!-- 子菜单（A/B/C） -->
                     <div id="statsSubmenu" class="stats-submenu"
                          style="display: {{ 'block' if stats_menu_open == 'true' else 'none' }}; padding-left: 1rem; margin-top: 0.25rem;">
                         <a class="nav-link {% if request.path == '/stats/a' %}active{% endif %}"
                            href="/stats/a"
                            style="font-size: 0.9rem; padding-left: 1.5rem;">
-                            分类占比
+                            月度构成
                         </a>
                         <a class="nav-link {% if request.path == '/stats/b' %}active{% endif %}"
                            href="/stats/b"
                            style="font-size: 0.9rem; padding-left: 1.5rem;">
-                            近7天收支
-                        </a>
-                        <a class="nav-link {% if request.path == '/stats/c' %}active{% endif %}"
-                           href="/stats/c"
-                           style="font-size: 0.9rem; padding-left: 1.5rem;">
-                            消费排行
+                            详细收支
                         </a>
                     </div>
                 </div>
 
-                <!-- 资产（点击展开/折叠） -->
+                <!-- 资产 -->
                 <div>
                     <a class="nav-link {% if request.path == '/assets' or request.path == '/assets/a' or request.path == '/assets/b' or request.path == '/assets/c' %}active{% endif %}"
                        href="#"
@@ -100,7 +93,6 @@
                         <i class="fas fa-wallet"></i> 资产
                     </a>
 
-                    <!-- 子菜单（A/B/C） -->
                     <div id="assetsSubmenu" class="assets-submenu"
                          style="display: {{ 'block' if assets_menu_open == 'true' else 'none' }}; padding-left: 1rem; margin-top: 0.25rem;">
                         <a class="nav-link {% if request.path == '/assets/a' %}active{% endif %}"
@@ -127,7 +119,7 @@
                 </a>
             </nav>
 
-            <!-- 底部菜单（用户/设置） -->
+            <!-- 底部菜单 -->
             <div>
                 <hr class="my-3">
                 <a class="nav-link {% if request.path == '/profile' %}active{% endif %}" href="/profile">
@@ -140,46 +132,54 @@
         </div>
 
         <!-- ======== 右侧内容区 ======== -->
-        <div class="col-md-10 col-lg-11 content-area">
-            <!-- 顶部栏（页面标题） -->
+        <div class="col-md-10 col-lg-11 content-area" id="rightContentArea">
+            <!-- 顶部栏 -->
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2>{% block page_title %}{% endblock %}</h2>
             </div>
 
             <!-- 页面主要内容 -->
-            <div class="page-content">
+            <div class="page-content" id="pageContent" style="min-height: 500px;">
                 {% block content %}{% endblock %}
             </div>
         </div>
     </div>
 </div>
 
+<!-- ======== 加一笔浮动面板 ======== -->
+<div id="addPanel" class="add-panel-floating">
+    <div class="add-panel-header">
+        <h5>记一笔</h5>
+        <button type="button" class="btn-close btn-close-white" onclick="hideAddPanel()" aria-label="Close"></button>
+    </div>
+    <div class="add-panel-body" style="position: relative; min-height: 500px;">
+        {% include 'add.html' %}
+    </div>
+</div>
+
+<!-- 遮罩层 -->
+<div id="panelOverlay" class="panel-overlay" onclick="hideAddPanel()"></div>
+
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-
-<!-- 抽屉菜单的JavaScript -->
 
 <script>
     // ==================== 统计菜单 ====================
     function toggleStatsSubmenu(event) {
         event.preventDefault();
-
         const submenu = document.getElementById('statsSubmenu');
         const isNowHidden = submenu.style.display === 'none';
 
-        // 切换显示状态
-        // 在切换显示状态时
         if (isNowHidden) {
             submenu.style.display = 'block';
             localStorage.setItem('statsMenuOpen', 'true');
-            document.cookie = "statsMenuOpen=true; path=/";  // 可选
+            document.cookie = "statsMenuOpen=true; path=/";
         } else {
             submenu.style.display = 'none';
             localStorage.setItem('statsMenuOpen', 'false');
-            document.cookie = "statsMenuOpen=false; path=/";  // 可选
+            document.cookie = "statsMenuOpen=false; path=/";
         }
 
-        // 添加 active 类
         document.querySelectorAll('[data-path="/stats"]').forEach(el => {
             el.classList.remove('active');
         });
@@ -189,19 +189,17 @@
     // ==================== 资产菜单 ====================
     function toggleAssetsSubmenu(event) {
         event.preventDefault();
-
         const submenu = document.getElementById('assetsSubmenu');
         const isNowHidden = submenu.style.display === 'none';
 
-        // 在切换显示状态时
         if (isNowHidden) {
             submenu.style.display = 'block';
-            localStorage.setItem('statsMenuOpen', 'true');
-            document.cookie = "statsMenuOpen=true; path=/";  // 可选
+            localStorage.setItem('assetsMenuOpen', 'true');
+            document.cookie = "assetsMenuOpen=true; path=/";
         } else {
             submenu.style.display = 'none';
-            localStorage.setItem('statsMenuOpen', 'false');
-            document.cookie = "statsMenuOpen=false; path=/";  // 可选
+            localStorage.setItem('assetsMenuOpen', 'false');
+            document.cookie = "assetsMenuOpen=false; path=/";
         }
 
         document.querySelectorAll('[data-path="/assets"]').forEach(el => {
@@ -210,7 +208,59 @@
         event.currentTarget.classList.add('active');
     }
 
-    // ==================== 页面加载时恢复用户选择 ====================
+    // ==================== 加一笔面板控制 ====================
+    function toggleAddPanel(event) {
+        if (event) event.preventDefault();
+        const panel = document.getElementById('addPanel');
+        const overlay = document.getElementById('panelOverlay');
+
+        if (panel.classList.contains('show')) {
+            panel.classList.remove('show');
+            overlay.style.display = 'none';
+            document.body.classList.remove('panel-open');
+        } else {
+            panel.classList.add('show');
+            overlay.style.display = 'block';
+            document.body.classList.add('panel-open');
+        }
+    }
+
+    function hideAddPanel() {
+        const panel = document.getElementById('addPanel');
+        const overlay = document.getElementById('panelOverlay');
+        panel.classList.remove('show');
+        overlay.style.display = 'none';
+        document.body.classList.remove('panel-open');
+    }
+
+
+    
+    // ==================== 保存成功界面 ====================
+    function showSuccessOverlay() {
+        const overlay = document.getElementById('successOverlay');
+        if (overlay) {
+            overlay.classList.add('show');
+        }
+    }
+    
+    function hideSuccessOverlay() {
+        const overlay = document.getElementById('successOverlay');
+        if (overlay) {
+            overlay.classList.remove('show');
+        }
+    }
+    
+    // 点击遮罩层关闭成功界面
+    document.addEventListener('DOMContentLoaded', function() {
+        const successOverlay = document.getElementById('successOverlay');
+        if (successOverlay) {
+            successOverlay.addEventListener('click', function(e) {
+                hideSuccessOverlay();
+            });
+        }
+    });
+
+    // ==================== 页面加载时恢复菜单状态 ====================
     document.addEventListener('DOMContentLoaded', function() {
         const currentPath = window.location.pathname;
         const statsSubmenu = document.getElementById('statsSubmenu');
@@ -223,15 +273,11 @@
         if (statsMenuState === 'false') {
             statsSubmenu.style.display = 'none';
         } else {
-            // 默认展开的情况：
-            // 1. 第一次访问（没有记录）
-            // 2. 上次是展开的
-            // 3. 当前在统计子页面
-            if (currentPath === '/stats/a' || currentPath === '/stats/b' || currentPath === '/stats/c') {
+            if (currentPath === '/stats/a' || currentPath === '/stats/b') {
                 statsSubmenu.style.display = 'block';
                 if (statsBtn) statsBtn.classList.add('active');
             } else {
-                statsSubmenu.style.display = statsMenuState === 'true' ? 'block' : 'block';  // 默认展开
+                statsSubmenu.style.display = statsMenuState === 'true' ? 'block' : 'none';
             }
         }
 
@@ -244,30 +290,17 @@
                 assetsSubmenu.style.display = 'block';
                 if (assetsBtn) assetsBtn.classList.add('active');
             } else {
-                assetsSubmenu.style.display = assetsMenuState === 'true' ? 'block' : 'block';  // 默认展开
+                assetsSubmenu.style.display = assetsMenuState === 'true' ? 'block' : 'none';
             }
         }
     });
-
-    // ==================== 点击其他菜单时自动收起统计 ====================
-    document.addEventListener('DOMContentLoaded', function() {
-        const statsBtn = document.querySelector('[data-path="/stats"]');
-        const otherNavLinks = document.querySelectorAll('.nav-link:not([data-path="/stats"]):not([data-path="/assets"])');
-
-        otherNavLinks.forEach(link => {
-            link.addEventListener('click', function() {
-                const statsSubmenu = document.getElementById('statsSubmenu');
-                const assetsSubmenu = document.getElementById('assetsSubmenu');
-
-                // 只收起，不保存状态（因为是临时行为）
-                statsSubmenu.style.display = 'none';
-                assetsSubmenu.style.display = 'none';
-
-                if (statsBtn) statsBtn.classList.remove('active');
-            });
-        });
-    });
 </script>
+
+<!-- ======== 保存成功界面 ======== -->
+<div id="successOverlay" class="success-overlay">
+    <div class="success-indicator">
+    </div>
+</div>
 
 <!-- 页面专属JS -->
 {% block scripts %}{% endblock %}

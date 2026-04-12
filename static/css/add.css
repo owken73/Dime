@@ -1,0 +1,1056 @@
+/* static/css/add.css */
+
+/* ======== 加一笔浮动面板（从左边向右弹出） ======== */
+.add-panel-floating {
+    position: fixed;
+    top: 0;
+    left: 16.666%;
+    width: 380px;
+    height: 100vh;
+    background-color: #2a2a2a;
+    border-left: 1px solid #404040;
+    border-right: 1px solid #404040;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.5);
+    z-index: 1010;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+    overflow-y: auto;
+}
+
+.add-panel-floating.show {
+    transform: translateX(0%);
+}
+
+/* 面板头部 */
+.add-panel-floating .add-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #404040;
+    color: #ffffff;
+}
+
+.add-panel-floating .add-panel-header h5 {
+    margin: 0;
+    font-weight: 500;
+}
+
+/* 面板身体 */
+.add-panel-floating .add-panel-body {
+    padding: 1.25rem;
+    position: relative;
+    min-height: 500px;
+    height: calc(100vh - 60px);
+    overflow-y: auto;
+}
+
+/* ======== 遮罩层 ======== */
+.panel-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.1);
+    z-index: 1005;
+    display: none;
+}
+
+/* 防止背景滚动 */
+body.panel-open {
+    overflow: hidden;
+}
+
+/* ======== 顶部按钮组 ======== */
+.add-type-tabs {
+    display: flex;
+    gap: 0.5rem;
+    padding: 1rem 1.25rem 0.5rem 1.25rem;
+    background-color: #2a2a2a;
+}
+
+.type-tab {
+    flex: 1;
+    background-color: transparent;
+    border: 1px solid #505050;
+    color: #b0b0b0;
+    border-radius: 30px;
+    padding: 0.4rem 0;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+}
+
+.type-tab:hover {
+    background-color: rgba(80, 80, 80, 0.3);
+    color: #ffffff;
+    border-color: #808080;
+}
+
+.type-tab.active {
+    background-color: rgba(100, 100, 100, 0.5);
+    color: #ffffff;
+    border-color: #a0a0a0;
+}
+
+/* ======== 表单样式 ======== */
+.add-form .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.add-form label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+    font-size: 0.9rem;
+}
+
+.add-form .form-control,
+.add-form select.form-control,
+.add-form input[type="date"].form-control,
+.add-form input[type="text"].form-control,
+.add-form input[type="number"].form-control {
+    background-color: #1f1f1f !important;
+    border: 1px solid #404040;
+    color: #ffffff !important;
+    border-radius: 8px;
+    padding: 0.3rem 1rem;
+    width: 100%;
+    height: 36px;
+    font-size: 1rem;
+}
+
+.add-form .form-control:focus {
+    background-color: #2a2a2a;
+    border-color: #666666;
+    box-shadow: none;
+    outline: none;
+}
+
+.add-form .form-control::placeholder {
+    color: #808080;
+    font-size: 1rem;
+}
+
+/* 金额输入框特殊样式 */
+.amount-input {
+    font-size: 1rem !important;
+    font-weight: 500;
+    text-align: left;
+    padding: 0.3rem 1rem;
+    height: 36px;
+}
+
+.amount-input::placeholder {
+    font-size: 1rem;
+    color: #808080;
+}
+
+/* 隐藏输入框的上下箭头 */
+.amount-input::-webkit-outer-spin-button,
+.amount-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.amount-input[type=number] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+/* 日期输入框样式 */
+.add-form input[type="date"].form-control {
+    background-color: #1f1f1f !important;
+    color: #808080 !important;
+    border: 1px solid #404040;
+    font-family: inherit;
+}
+
+.add-form input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    opacity: 0.5;
+    cursor: pointer;
+}
+
+.add-form input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+}
+
+/* 下拉选择框样式 */
+.add-form select.form-control {
+    background-color: #1f1f1f !important;
+    color: #808080 !important;
+    border: 1px solid #404040;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23808080' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 16px;
+}
+
+.add-form select.form-control option {
+    background-color: #1f1f1f;
+    color: #ffffff;
+}
+
+/* 计算器图标按钮 */
+.calc-icon-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: #a0a0a0;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0 8px;
+    z-index: 2;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.calc-icon-btn:hover {
+    color: #ffffff;
+}
+
+/* 金额输入框留出空间 */
+.amount-input {
+    padding-right: 45px !important;
+}
+
+/* 计算器覆盖层 */
+.calculator-overlay {
+    position: absolute;
+    top: calc(100% + 2px);
+    right: 0;
+    width: 120px; /* 宽度减小一半 */
+    z-index: 20;
+    background-color: #2a2a2a;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* 计算器样式 */
+.calculator {
+    padding: 0.4rem;
+    background-color: #2a2a2a;
+    border-radius: 8px;
+    width: 100%;
+    aspect-ratio: 3/2; /* 调整为更紧凑的比例，长度减小约三分之一 */
+    display: flex;
+    flex-direction: column;
+}
+
+.calculator-display {
+    margin-bottom: 0.3rem;
+}
+
+.calculator-display input {
+    background-color: #1f1f1f;
+    border: 1px solid #404040;
+    color: #ffffff;
+    font-size: 0.8rem;
+    text-align: right;
+    padding: 0.2rem 0.3rem;
+    border-radius: 4px;
+    width: 100%;
+    height: 25px;
+}
+
+.calculator-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    flex: 1;
+}
+
+.calc-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.2rem;
+    flex: 1;
+}
+
+.calc-btn {
+    background-color: #1f1f1f;
+    border: 1px solid #404040;
+    color: #e0e0e0;
+    border-radius: 4px;
+    padding: 0.2rem 0.1rem;
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.calc-btn:hover {
+    background-color: #3a3a3a;
+    border-color: #666666;
+    color: #ffffff;
+}
+
+/* 所有操作符按钮统一为浅灰色 */
+.calc-operator,
+.calc-clear,
+.calc-delete,
+.calc-equals {
+    background-color: #1f1f1f;
+    color: #e0e0e0;
+    border: 1px solid #404040;
+}
+
+.calc-operator:hover,
+.calc-clear:hover,
+.calc-delete:hover,
+.calc-equals:hover {
+    background-color: #3a3a3a;
+    color: #ffffff;
+}
+
+/* 确保表单组有相对定位 */
+.form-group {
+    position: relative;
+}
+
+/* 提交按钮 */
+.add-form .btn-primary {
+    background-color: #3a3a3a;
+    border: 1px solid #555555;
+    color: #ffffff;
+    border-radius: 8px;
+    padding: 0.75rem;
+    font-weight: 500;
+    width: 100%;
+    margin-top: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.add-form .btn-primary:hover {
+    background-color: #4a4a4a;
+    border-color: #777777;
+}
+
+/* ======== 分类选择器 ======== */
+/* 分类分裂容器 */
+.category-split-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.category-selector-wrapper {
+    position: relative;
+    flex: 1;
+}
+
+.category-selector {
+    background-color: #1f1f1f;
+    border: 1px solid #404040;
+    border-radius: 8px;
+    padding: 0.4rem 0.8rem;
+    color: #808080;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    height: 32px;
+}
+
+.category-selector:hover {
+    background-color: #2a2a2a;
+    border-color: #666666;
+}
+
+.category-selector i {
+    color: #808080;
+    font-size: 0.8rem;
+}
+
+/* 类别箭头 */
+.category-arrow {
+    flex: none;
+    color: #404040;
+    font-size: 1rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 36px;
+}
+
+/* 禁用状态的详细选择器 */
+.category-selector-wrapper.disabled {
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+.category-selector-wrapper.disabled .category-selector {
+    cursor: not-allowed;
+    background-color: #151515;
+    color: #404040;
+}
+
+.category-selector-wrapper.disabled .category-selector i {
+    color: #404040;
+}
+
+
+
+/* ======== 类别下拉菜单 ======== */
+.category-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: #1f1f1f;
+    border: 1px solid #404040;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    max-height: 300px;
+    overflow-y: auto;
+    margin-top: 4px;
+}
+
+.dropdown-items {
+    padding: 8px 0;
+}
+
+.dropdown-item {
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.dropdown-item:hover {
+    background-color: #333;
+}
+
+.dropdown-item.custom-input {
+    padding: 10px 16px 10px 16px;
+}
+
+.input-with-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.input-with-check input {
+    flex: 1;
+    background-color: #2a2a2a;
+    border: 1px solid #404040;
+    border-radius: 4px;
+    padding: 6px 10px;
+    color: #ffffff;
+    font-size: 0.9rem;
+}
+
+.input-with-check input::placeholder {
+    color: #808080;
+}
+
+.input-with-check button {
+    background: none;
+    border: none;
+    color: #ffffff;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 6px 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.input-with-check button:hover {
+    background-color: #444;
+}
+
+/* ======== 分类抽屉 ======== */
+.category-drawer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: auto;
+    max-height: 400px;  /* 从 80% 改为 400px，缩短高度 */
+    background-color: #2a2a2a;
+    border: 1px solid #404040;
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+    z-index: 1060;
+    display: none;
+    overflow-y: auto;
+    margin-top: 5px;
+}
+
+.category-drawer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #404040;
+    color: #ffffff;
+}
+
+.category-drawer-header h5 {
+    margin: 0;
+    font-weight: 500;
+}
+
+.category-drawer-body {
+    padding: 1.25rem;
+}
+
+/* 左右分栏布局 */
+.category-split {
+    display: flex;
+    gap: 0.5rem;
+    min-height: 300px;
+}
+
+/* 左边大类 */
+.category-main {
+    width: 80px;
+    border-right: 1px solid #404040;
+}
+
+.main-category {
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    border-radius: 8px;
+    color: #d0d0d0;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+}
+
+.add-category-btn {
+    background-color: rgba(100, 100, 100, 0.3);
+    border: 1px dashed #666666;
+    text-align: center;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.add-category-btn:hover {
+    background-color: rgba(120, 120, 120, 0.4);
+    border-color: #888888;
+    color: #ffffff;
+}
+
+.main-category i {
+    margin-right: 0.5rem;
+    width: 20px;
+}
+
+.main-category:hover,
+.main-category.active {
+    background-color: #3a3a3a;
+    color: #ffffff;
+}
+
+/* 右边子分类 */
+.category-sub {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.3rem;
+    align-content: start;
+}
+
+.sub-category {
+    background-color: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0.75rem;
+    text-align: left;
+    color: #d0d0d0;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.85rem;
+    white-space: normal;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+}
+
+.sub-category:hover {
+    background-color: #333333;
+    border-color: #666666;
+    color: #ffffff;
+}
+
+/* 自定义分类 */
+.custom-category {
+    margin-top: 1rem;  /* 从 1.5rem 改为 1rem，减少上边距 */
+    display: flex;
+    gap: 0.5rem;
+    border-top: 1px solid #404040;
+    padding-top: 0.75rem;  /* 从 1.5rem 改为 0.75rem */
+}
+
+.custom-category input {
+    flex: 1;
+    background-color: #1f1f1f;
+    border: 1px solid #404040;
+    color: #ffffff;
+    border-radius: 8px;
+    padding: 0.3rem 0.75rem;  /* 从 0.5rem 1rem 改为 0.3rem 0.75rem，和金额输入框一致 */
+    height: 36px;  /* 添加固定高度，与金额输入框一致 */
+    font-size: 0.9rem;  /* 添加字体大小 */
+}
+
+.custom-category input:focus {
+    outline: none;
+    border-color: #666666;
+    background-color: #2a2a2a;
+}
+
+.custom-category button {
+    white-space: nowrap;
+    background-color: #3a3a3a;
+    border: 1px solid #555555;
+    color: #ffffff;
+    border-radius: 8px;
+    padding: 0.3rem 0.75rem;  /* 从 0.5rem 1rem 改为 0.3rem 0.75rem */
+    height: 36px;  /* 添加固定高度，与金额输入框一致 */
+    font-size: 0.85rem;  /* 添加字体大小 */
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.custom-category button:hover {
+    background-color: #4a4a4a;
+    border-color: #777777;
+}
+
+/* 分类抽屉的遮罩层 */
+.drawer-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1055;
+    display: none;
+}
+
+/* 添加分类对话框 */
+.add-category-dialog {
+    position: absolute;
+    z-index: 1060;
+    width: 280px;
+    background-color: #2a2a2a;
+    border: 1px solid #404040;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+}
+
+.dialog-arrow {
+    position: absolute;
+    top: -8px;
+    left: 20px;
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid #2a2a2a;
+}
+
+.dialog-content {
+    padding: 2rem 1rem 1rem 1rem;
+    position: relative;
+}
+
+.dialog-content h6 {
+    margin: 0 0 1rem 0;
+    color: #ffffff;
+    font-weight: 500;
+}
+
+.dialog-form .form-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.dialog-form .form-group {
+    flex: 1;
+    position: relative;
+}
+
+.arrow-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0.5rem 0;
+}
+
+.arrow-row span {
+    color: #808080;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.dialog-form label {
+    display: block;
+    margin-bottom: 0.3rem;
+    color: #e0e0e0;
+    font-size: 0.8rem;
+}
+
+/* 类别下拉菜单 */
+.category-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background-color: #2a2a2a;
+    border: 1px solid #404040;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 1070;
+    margin-top: 4px;
+}
+
+.dropdown-items {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.dropdown-item {
+    padding: 0.75rem;
+    color: #d0d0d0;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.dropdown-item:hover {
+    background-color: #3a3a3a;
+    color: #ffffff;
+}
+
+.dropdown-item.custom-input {
+    padding: 0.75rem;
+    border-top: 1px solid #404040;
+    margin-top: 0.5rem;
+    position: relative;
+}
+
+.dropdown-item.custom-input .input-with-check {
+    position: relative;
+}
+
+.dropdown-item.custom-input input {
+    width: 100%;
+    background-color: #1f1f1f;
+    border: 1px solid #404040;
+    color: #ffffff;
+    border-radius: 6px;
+    padding: 0.3rem 1.5rem 0.3rem 0.5rem;
+    font-size: 0.8rem;
+}
+
+.dropdown-item.custom-input button {
+    position: absolute;
+    right: 0.3rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: transparent;
+    border: none;
+    color: #808080;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    padding: 0.2rem;
+    border-radius: 4px;
+}
+
+.dropdown-item.custom-input button:hover {
+    background-color: rgba(128, 128, 128, 0.2);
+    color: #ffffff;
+}
+
+.dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+}
+
+.dialog-actions button {
+    padding: 0.3rem 0.6rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background-color: transparent;
+    border: none;
+    color: #808080;
+    font-size: 0.9rem;
+}
+
+.dialog-actions button:hover {
+    background-color: rgba(128, 128, 128, 0.2);
+    color: #ffffff;
+}
+
+/* ======== 滚动条样式 ======== */
+/* 滚动条轨道 */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+/* 滚动条滑块 */
+::-webkit-scrollbar-thumb {
+    background-color: #555555;
+    border-radius: 3px;
+}
+
+/* 滚动条轨道 */
+::-webkit-scrollbar-track {
+    background-color: #2a2a2a;
+}
+
+/* 滚动条悬停效果 */
+::-webkit-scrollbar-thumb:hover {
+    background-color: #666666;
+}
+
+/* ======== 手机版适配 ======== */
+@media (max-width: 768px) {
+    .add-panel-floating {
+        left: 0;
+        width: 85%;
+    }
+
+    .category-split {
+        flex-direction: column;
+    }
+
+    .category-main {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid #404040;
+        padding-bottom: 0.5rem;
+        margin-bottom: 0.5rem;
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .main-category {
+        flex: 1;
+        text-align: center;
+        margin-bottom: 0;
+    }
+
+    .main-category i {
+        margin-right: 0.25rem;
+    }
+
+    .category-sub {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* ======== 自定义滚动条 ======== */
+/* 整个滚动条 */
+.add-panel-floating::-webkit-scrollbar {
+    width: 6px;  /* 滚动条宽度，从默认的12-15px改成6px，更窄 */
+}
+
+/* 滚动条轨道 */
+.add-panel-floating::-webkit-scrollbar-track {
+    background: #1f1f1f;  /* 深灰色轨道 */
+    border-radius: 3px;
+}
+
+/* 滚动条滑块 */
+.add-panel-floating::-webkit-scrollbar-thumb {
+    background: #505050;  /* 深灰色滑块 */
+    border-radius: 3px;
+}
+
+/* 滚动条滑块悬停效果 */
+.add-panel-floating::-webkit-scrollbar-thumb:hover {
+    background: #707070;  /* 悬停时稍微亮一点 */
+}
+
+/* 为了让分类抽屉也有同样的滚动条 */
+.category-drawer::-webkit-scrollbar {
+    width: 6px;
+}
+
+.category-drawer::-webkit-scrollbar-track {
+    background: #1f1f1f;
+    border-radius: 3px;
+}
+
+.category-drawer::-webkit-scrollbar-thumb {
+    background: #505050;
+    border-radius: 3px;
+}
+
+.category-drawer::-webkit-scrollbar-thumb:hover {
+    background: #707070;
+}
+
+/* ======== 转账账户选择器 ======== */
+.transfer-account-selector {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.account-selector {
+    flex: 1;
+    background-color: #1f1f1f;
+    border: 1px solid #404040;
+    border-radius: 8px;
+    padding: 0.4rem 0.8rem;
+    color: #808080;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    height: 32px;
+}
+
+.account-selector span {
+    color: #808080;
+}
+
+.account-selector:hover {
+    background-color: #2a2a2a;
+    border-color: #666666;
+}
+
+.account-selector i {
+    color: #808080;
+    font-size: 0.8rem;
+}
+
+.transfer-arrow {
+    width: 30px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #808080;
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+/* ======== 账户选择抽屉 ======== */
+.account-drawer {
+    position: absolute;
+    width: 100%;
+    background-color: #2a2a2a;
+    border: 1px solid #404040;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+    z-index: 1070;
+    display: none;
+    overflow-y: auto;
+    margin-top: 5px;
+    max-height: 280px;  /* 限制最大高度，变成向下滑动的抽屉 */
+}
+
+.account-drawer-header {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #404040;
+    color: #ffffff;
+    font-weight: 500;
+}
+
+/* ======== 账户选择抽屉 ======== */
+.account-drawer {
+    position: absolute;
+    width: 100%;
+    background-color: #2a2a2a;
+    border: 1px solid #404040;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 1070;
+    display: none;
+    overflow-y: auto;
+    margin-top: 4px;
+    max-height: 240px;
+}
+
+.account-drawer-body {
+    padding: 0.5rem;
+}
+
+.account-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.account-item {
+    background-color: #1f1f1f;
+    border: 1px solid #404040;
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    color: #e0e0e0;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.account-item i {
+    font-size: 0.9rem;
+    color: #a0a0a0;
+    width: 20px;
+}
+
+.account-item:hover {
+    background-color: #3a3a3a;
+    border-color: #666666;
+    color: #ffffff;
+}
+
+.account-item:hover i {
+    color: #ffffff;
+}
+
+/* 账户选择器包裹器 */
+.account-selector-wrapper {
+    flex: 1;
+    position: relative;
+}
+
+/* ======== 小屏幕适配 ======== */
+@media (max-width: 480px) {
+    .category-sub {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .custom-category {
+        flex-direction: column;
+    }
+
+    .custom-category button {
+        width: 100%;
+    }
+}

@@ -4,6 +4,12 @@
     display: none;
 }
 
+
+.sidebar {
+    z-index: 1020 !important;  /* 用很大的值，确保在最上面 */
+    position: relative;  /* z-index 需要配合 position 使用 */
+}
+
 /* ======== 全局深灰主色 ======== */
 body {
     background-color: #1a1a1a;
