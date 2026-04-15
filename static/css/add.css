@@ -1074,27 +1074,27 @@ body.panel-open {
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
-    border: 1px solid;
+    border: none;
 }
 
 .btn-save-temp {
     background-color: #3a3a3a;
-    border-color: #555555;
-    color: #ffffff;
+    border: none;
+    color: #E2E2E2;
 }
 
 .btn-save-temp:hover {
     background-color: #4a4a4a;
-    border-color: #777777;
+    border: none;
 }
 
 .btn-print-receipt {
     background-color: rgba(100, 100, 100, 0.3);
-    border-color: #555555;
-    color: #ffffff;
+    border: none;
+    color: #E2E2E2;
 }
 
 .btn-print-receipt:hover {
     background-color: rgba(120, 120, 120, 0.4);
-    border-color: #777777;
+    border: none;
 }

@@ -2027,5 +2027,26 @@ function addCustomSubCategory(type) {
     }
 }
 
+// 处理打印小票按钮的点击事件
+document.addEventListener('DOMContentLoaded', function() {
+    // 为所有打印小票按钮添加点击事件监听器
+    document.querySelectorAll('.btn-print-receipt').forEach(button => {
+        button.addEventListener('click', function() {
+            // 找到当前按钮所在的表单
+            const form = this.closest('form');
+            
+            // 触发表单验证
+            if (form.checkValidity()) {
+                // 表单验证通过，执行打印小票的逻辑
+                // 这里可以添加打印小票的代码
+                console.log('打印小票');
+            } else {
+                // 表单验证失败，显示错误信息
+                form.reportValidity();
+            }
+        });
+    });
+});
+
 </script>
 

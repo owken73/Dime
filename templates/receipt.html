@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>记账小票打印动画</title>
+  <style>
+    
+    * {
+      font-family: sans-serif;
+    }
+    
+    /* 小票字体 */
+    .receipt-font {
+      font-family: monospace;
+    }
+    
+    /* 背景变暗遮罩 */
+    .overlay {
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.4s ease, visibility 0.4s ease;
+    }
+    
+    .overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    /* 打印机容器 */
+    .printer-container {
+      position: fixed;
+      top: -120px;
+      left: 50%;
+      transform: translateX(-50%);
+      transition: top 0.4s linear;
+      z-index: 1000;
+    }
+    
+    .printer-container.active {
+      top: 0;
+    }
+    
+    /* 打印机样式 */
+    .printer {
+      width: 420px;
+      background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 50%, #0d0d0d 100%);
+      border-radius: 0 0 20px 20px;
+      box-shadow: 
+        0 8px 32px rgba(0,0,0,0.5),
+        inset 0 1px 0 rgba(255,255,255,0.1),
+        inset 0 -1px 0 rgba(0,0,0,0.3);
+      position: relative;
+      overflow: visible;
+      border: 1px solid #333;
+    }
+    
+    .printer-body {
+      padding: 20px 20px 16px;
+    }
+    
+    /* 出纸口 */
+    .paper-slot {
+      height: 10px;
+      background: linear-gradient(180deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+      border-radius: 0 0 4px 4px;
+      position: relative;
+      margin: 0 10px;
+      box-shadow: inset 0 3px 6px rgba(0,0,0,0.6);
+      overflow: visible;
+      /* 作为小票的裁剪参考 */
+    }
+    
+    /* 齿轮装饰 - 锯齿边（出纸口位置） */
+    .paper-slot::before {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 4px;
+      background: repeating-linear-gradient(
+        90deg,
+        #333 0px,
+        #333 3px,
+        #1a1a1a 3px,
+        #1a1a1a 6px
+      );
+      bottom: -2px;
+      left: 0;
+      border-radius: 2px 2px 0 0;
+    }
+    
+    /* 小票纸张容器 - 从出纸口出来 */
+    .receipt-wrapper {
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 320px;
+      z-index: 999;
+      overflow: visible;
+    }
+    
+    /* 小票上部分 - 撕下来掉落的 */
+    .receipt-top {
+      position: relative;
+      background: #fffef8;
+      padding: 6px 0 0 0;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      /* 初始状态：完全隐藏在出纸口上方 */
+      transform: translateY(-100%);
+      transition: transform 1.2s linear;
+    }
+    
+    .receipt-top.printing {
+      /* 从出纸口慢慢向下出现 */
+      transform: translateY(0);
+    }
+    
+    /* 顶部打孔虚线 - 完整圆形小孔，靠近顶部 */
+    .receipt-top::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 12px;
+      background-image: radial-gradient(circle at center, #1a1a1a 3px, #fffef8 3px);
+      background-size: 10px 12px;
+      background-position: 5px 0;
+      background-repeat: repeat-x;
+    }
+    
+    /* 上部分底边锯齿 - 用clip-path实现半圆 */
+    .receipt-top::after {
+      content: '';
+      position: absolute;
+      bottom: -6px;
+      left: 0;
+      right: 0;
+      height: 12px;
+      background: #fffef8;
+      clip-path: polygon(
+        0% 50%, 1.5% 0%, 3% 50%, 4.5% 0%, 6% 50%, 7.5% 0%,
+        9% 50%, 10.5% 0%, 12% 50%, 13.5% 0%, 15% 50%, 16.5% 0%,
+        18% 50%, 19.5% 0%, 21% 50%, 22.5% 0%, 24% 50%, 25.5% 0%,
+        27% 50%, 28.5% 0%, 30% 50%, 31.5% 0%, 33% 50%, 34.5% 0%,
+        36% 50%, 37.5% 0%, 39% 50%, 40.5% 0%, 42% 50%, 43.5% 0%,
+        45% 50%, 46.5% 0%, 48% 50%, 49.5% 0%, 51% 50%, 52.5% 0%,
+        54% 50%, 55.5% 0%, 57% 50%, 58.5% 0%, 60% 50%, 61.5% 0%,
+        63% 50%, 64.5% 0%, 66% 50%, 67.5% 0%, 69% 50%, 70.5% 0%,
+        72% 50%, 73.5% 0%, 75% 50%, 76.5% 0%, 78% 50%, 79.5% 0%,
+        81% 50%, 82.5% 0%, 84% 50%, 85.5% 0%, 87% 50%, 88.5% 0%,
+        90% 50%, 91.5% 0%, 93% 50%, 94.5% 0%, 96% 50%, 97.5% 0%,
+        99% 50%, 100% 50%
+      );
+    }
+    
+    /* 上部分撕裂掉落动画 - 支点在左边小孔中心（距顶部6px），从右边小孔中间开始撕 */
+    .receipt-top.tearing {
+      transform-origin: 0 6px;
+      animation: topTearOff 2s ease-out forwards;
+    }
+    
+    @keyframes topTearOff {
+      0% {
+        transform: rotate(0deg);
+      }
+      10% {
+        transform: rotate(2deg);
+      }
+      25% {
+        transform: rotate(5deg);
+      }
+      40% {
+        transform: rotate(10deg);
+      }
+      55% {
+        transform: rotate(15deg);
+      }
+      70% {
+        transform: rotate(15deg);
+      }
+      100% {
+        transform: rotate(20deg) translateY(100vh);
+      }
+    }
+    
+
+    
+    /* 小票内容 */
+    .receipt-content {
+      padding: 16px;
+    }
+    
+    /* 小票标题 */
+    .receipt-header {
+      text-align: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px dashed #ccc;
+    }
+    
+    .receipt-store-name {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-bottom: 4px;
+    }
+    
+    .receipt-date {
+      font-size: 11px;
+      color: #666;
+    }
+    
+    /* 小票项目 */
+    .receipt-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 8px 0;
+      border-bottom: 1px dotted #ddd;
+    }
+    
+    .receipt-item:last-child {
+      border-bottom: none;
+    }
+    
+    .item-name {
+      font-size: 13px;
+      color: #333;
+      flex: 1;
+    }
+    
+    .item-category {
+      font-size: 10px;
+      color: #999;
+      display: block;
+      margin-top: 2px;
+    }
+    
+    .item-amount {
+      font-size: 13px;
+      font-weight: 500;
+      color: #1a1a1a;
+    }
+    
+    .item-amount.expense {
+      color: #ef4444;
+    }
+    
+    .item-amount.income {
+      color: #22c55e;
+    }
+    
+    /* 小票总计 */
+    .receipt-total {
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 2px solid #1a1a1a;
+    }
+    
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    
+    .total-label {
+      font-size: 12px;
+      color: #666;
+    }
+    
+    .total-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+    
+    .grand-total .total-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+    
+    .grand-total .total-value {
+      font-size: 18px;
+      color: #ef4444;
+    }
+    
+    /* 按钮区域 - 小票下方 */
+    .receipt-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+    
+    .receipt-actions.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    .btn {
+      flex: 1;
+      padding: 14px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .btn-cancel {
+      background: #f5f5f5;
+      color: #666;
+      border: 1px solid #e0e0e0;
+    }
+    
+    .btn-cancel:hover {
+      background: #e5e5e5;
+      transform: translateY(-1px);
+    }
+    
+    .btn-confirm {
+      background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%);
+      color: white;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    
+    .btn-confirm:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+    }
+    
+    .btn:active {
+      transform: translateY(0);
+    }
+    
+    /* 成功提示 */
+    .success-message {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.8);
+      background: white;
+      padding: 32px 48px;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      text-align: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 2000;
+    }
+    
+    .success-message.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    
+    .success-icon {
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      color: white;
+      font-size: 32px;
+    }
+    
+    .success-text {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1e293b;
+    }
+    
+    /* 打印指示器 */
+    .printing-indicator {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      gap: 4px;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      z-index: 10;
+    }
+    
+    .printing-indicator.active {
+      opacity: 1;
+    }
+    
+    .printing-indicator span {
+      width: 4px;
+      height: 16px;
+      background: #3b82f6;
+      border-radius: 2px;
+      animation: printSound 0.3s ease-in-out infinite alternate;
+    }
+    
+    .printing-indicator span:nth-child(2) {
+      animation-delay: 0.1s;
+    }
+    
+    .printing-indicator span:nth-child(3) {
+      animation-delay: 0.2s;
+    }
+    
+    @keyframes printSound {
+      0% {
+        height: 8px;
+      }
+      100% {
+        height: 20px;
+      }
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen">
+  
+  <!-- 主页面内容 -->
+  <div class="max-w-md mx-auto px-4 py-8">
+    <!-- 页面标题 -->
+    <div class="text-center mb-8">
+      <h1 class="text-2xl font-bold text-slate-800 mb-2">记账本</h1>
+      <p class="text-slate-500 text-sm">2026年4月9日</p>
+    </div>
+    
+    <!-- 账户卡片 -->
+    <div class="account-card mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-slate-600 text-sm">本月支出</span>
+        <span class="text-2xl font-bold text-slate-800">¥ 2,847.50</span>
+      </div>
+      <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+        <div class="h-full w-3/5 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full"></div>
+      </div>
+    </div>
+    
+    <!-- 今日记录 -->
+    <div class="mb-6">
+      <h2 class="text-lg font-semibold text-slate-700 mb-4">今日记录</h2>
+      
+      <!-- 记录列表 -->
+      <div id="recordList">
+        <div class="record-item">
+          <div class="record-icon transport">🚌</div>
+          <div class="record-info">
+            <div class="record-title">公交出行</div>
+            <div class="record-category">交通出行</div>
+          </div>
+          <div class="record-amount expense">-¥2.00</div>
+        </div>
+        
+        <div class="record-item">
+          <div class="record-icon savings">💰</div>
+          <div class="record-info">
+            <div class="record-title">银行卡存款</div>
+            <div class="record-category">储蓄理财</div>
+          </div>
+          <div class="record-amount income">+¥500.00</div>
+        </div>
+        
+        <div class="record-item">
+          <div class="record-icon food">🍜</div>
+          <div class="record-info">
+            <div class="record-title">午餐外卖</div>
+            <div class="record-category">餐饮美食</div>
+          </div>
+          <div class="record-amount expense">-¥28.50</div>
+        </div>
+        
+        <div class="record-item">
+          <div class="record-icon food">☕</div>
+          <div class="record-info">
+            <div class="record-title">下午茶</div>
+            <div class="record-category">餐饮美食</div>
+          </div>
+          <div class="record-amount expense">-¥15.00</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 确认按钮 -->
+    <button class="submit-btn" onclick="startPrinting()">
+      确认保存记账
+    </button>
+  </div>
+  
+  <!-- 遮罩层 -->
+  <div class="overlay fixed inset-0 bg-black/50 backdrop-blur-sm" id="overlay"></div>
+  
+  <!-- 打印机容器 -->
+  <div class="printer-container" id="printerContainer">
+    <div class="printer">
+      <div class="printer-body">
+        <div class="paper-slot">
+          <div class="printing-indicator" id="printingIndicator">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          
+          <!-- 小票纸张 - 从出纸口出来 -->
+          <div class="receipt-wrapper">
+            <!-- 小票上部分 - 撕下来掉落的 -->
+            <div class="receipt-top receipt-font" id="receiptTop">
+              <div class="receipt-content">
+                <!-- 小票头部 -->
+                <div class="receipt-header">
+                  <div class="receipt-store-name">记账明细</div>
+                  <div class="receipt-date">2026-04-09 13:34:03</div>
+                </div>
+                
+                <!-- 小票项目 -->
+                <div class="receipt-items">
+                  <div class="receipt-item">
+                    <div>
+                      <span class="item-name">公交出行</span>
+                      <span class="item-category">交通出行</span>
+                    </div>
+                    <span class="item-amount expense">-¥2.00</span>
+                  </div>
+                  
+                  <div class="receipt-item">
+                    <div>
+                      <span class="item-name">银行卡存款</span>
+                      <span class="item-category">储蓄理财</span>
+                    </div>
+                    <span class="item-amount income">+¥500.00</span>
+                  </div>
+                  
+                  <div class="receipt-item">
+                    <div>
+                      <span class="item-name">午餐外卖</span>
+                      <span class="item-category">餐饮美食</span>
+                    </div>
+                    <span class="item-amount expense">-¥28.50</span>
+                  </div>
+                  
+                  <div class="receipt-item">
+                    <div>
+                      <span class="item-name">下午茶</span>
+                      <span class="item-category">餐饮美食</span>
+                    </div>
+                    <span class="item-amount expense">-¥15.00</span>
+                  </div>
+                </div>
+                
+                <!-- 小票统计 -->
+                <div class="receipt-total">
+                  <div class="total-row">
+                    <span class="total-label">收入笔数</span>
+                    <span class="total-value">1 笔</span>
+                  </div>
+                  <div class="total-row">
+                    <span class="total-label">收入金额</span>
+                    <span class="total-value" style="color: #22c55e;">+¥500.00</span>
+                  </div>
+                  <div class="total-row">
+                    <span class="total-label">支出笔数</span>
+                    <span class="total-value">3 笔</span>
+                  </div>
+                  <div class="total-row">
+                    <span class="total-label">支出金额</span>
+                    <span class="total-value" style="color: #ef4444;">-¥45.50</span>
+                  </div>
+                  <div class="total-row grand-total">
+                    <span class="total-label">本次结余</span>
+                    <span class="total-value">+¥454.50</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+
+            
+            <!-- 操作按钮 - 在小票下方 -->
+            <div class="receipt-actions" id="receiptActions">
+              <button class="btn btn-cancel" onclick="cancelPrint()">取消</button>
+              <button class="btn btn-confirm" onclick="confirmPrint()">确定</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 成功提示 -->
+  <div class="success-message" id="successMessage">
+    <div class="success-icon">✓</div>
+    <div class="success-text">记账保存成功！</div>
+  </div>
+  
+  <script>
+    // 开始打印动画
+    function startPrinting() {
+      const overlay = document.getElementById('overlay');
+      const printerContainer = document.getElementById('printerContainer');
+      const receiptTop = document.getElementById('receiptTop');
+      const printingIndicator = document.getElementById('printingIndicator');
+      const receiptActions = document.getElementById('receiptActions');
+      
+      // 显示遮罩
+      overlay.classList.add('active');
+      
+      // 打印机下移
+      setTimeout(() => {
+        printerContainer.classList.add('active');
+      }, 200);
+      
+      // 显示打印指示器
+      setTimeout(() => {
+        printingIndicator.classList.add('active');
+      }, 600);
+      
+      // 小票开始打印
+      setTimeout(() => {
+        receiptTop.classList.add('printing');
+        printingIndicator.classList.remove('active');
+      }, 1000);
+      
+      // 小票打印完后显示按钮
+      setTimeout(() => {
+        receiptActions.classList.add('show');
+      }, 2200);
+    }
+    
+    // 取消打印
+    function cancelPrint() {
+      const overlay = document.getElementById('overlay');
+      const printerContainer = document.getElementById('printerContainer');
+      const receiptTop = document.getElementById('receiptTop');
+      const receiptActions = document.getElementById('receiptActions');
+      
+      // 隐藏按钮
+      receiptActions.classList.remove('show');
+      
+      // 小票收回
+      receiptTop.classList.remove('printing');
+      
+      // 打印机上移
+      setTimeout(() => {
+        printerContainer.classList.remove('active');
+      }, 800);
+      
+      // 隐藏遮罩
+      setTimeout(() => {
+        overlay.classList.remove('active');
+      }, 1200);
+    }
+    
+    // 确认打印（撕纸）- 支点在左边不动，纸从右边小孔中间距离顶部6px开始撕
+    function confirmPrint() {
+      const overlay = document.getElementById('overlay');
+      const printerContainer = document.getElementById('printerContainer');
+      const receiptTop = document.getElementById('receiptTop');
+      const receiptActions = document.getElementById('receiptActions');
+      const successMessage = document.getElementById('successMessage');
+      
+      // 隐藏按钮
+      receiptActions.classList.remove('show');
+      
+      // 上部分撕裂掉落
+      receiptTop.classList.add('tearing');
+      
+      // 打印机上移
+      setTimeout(() => {
+        printerContainer.classList.remove('active');
+      }, 2000);
+      
+      // 隐藏遮罩
+      setTimeout(() => {
+        overlay.classList.remove('active');
+      }, 2200);
+      
+      // 显示成功提示 & 重置状态
+      setTimeout(() => {
+        successMessage.classList.add('show');
+        receiptTop.classList.remove('tearing', 'printing');
+      }, 2600);
+      
+      // 隐藏成功提示
+      setTimeout(() => {
+        successMessage.classList.remove('show');
+      }, 3900);
+    }
+  </script>
+</body>
+</html>
