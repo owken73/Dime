@@ -1054,3 +1054,47 @@ body.panel-open {
         width: 100%;
     }
 }
+
+
+
+
+/* ======== 保存按钮组 ======== */
+.save-button-group {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding: 0 2px;
+}
+
+.save-button-group .btn {
+    flex: 1;
+    margin: 0 2px;
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid;
+}
+
+.btn-save-temp {
+    background-color: #3a3a3a;
+    border-color: #555555;
+    color: #ffffff;
+}
+
+.btn-save-temp:hover {
+    background-color: #4a4a4a;
+    border-color: #777777;
+}
+
+.btn-print-receipt {
+    background-color: rgba(100, 100, 100, 0.3);
+    border-color: #555555;
+    color: #ffffff;
+}
+
+.btn-print-receipt:hover {
+    background-color: rgba(120, 120, 120, 0.4);
+    border-color: #777777;
+}

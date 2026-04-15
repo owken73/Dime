@@ -163,7 +163,10 @@
                 <input type="text" name="description" class="form-control" placeholder="吃什么了？">
             </div>
 
-            <button type="submit" class="btn btn-primary">保存支出</button>
+            <div class="save-button-group">
+                <button type="submit" class="btn btn-save-temp">暂时保存</button>
+                <button type="button" class="btn btn-print-receipt">打印小票</button>
+            </div>
         </form>
     </div>
 </div>
@@ -321,7 +324,10 @@
                 <input type="text" name="description" class="form-control" placeholder="">
             </div>
 
-            <button type="submit" class="btn btn-primary">保存收入</button>
+            <div class="save-button-group">
+                <button type="submit" class="btn btn-save-temp">暂时保存</button>
+                <button type="button" class="btn btn-print-receipt">打印小票</button>
+            </div>
         </form>
     </div>
 </div>
@@ -498,7 +504,10 @@
                 <input type="text" name="description" class="form-control" placeholder="">
             </div>
 
-            <button type="submit" class="btn btn-primary">保存转账</button>
+            <div class="save-button-group">
+                <button type="submit" class="btn btn-save-temp">暂时保存</button>
+                <button type="button" class="btn btn-print-receipt">打印小票</button>
+            </div>
         </form>
     </div>
 </div>
@@ -627,7 +636,10 @@
                 <input type="text" name="description" class="form-control" placeholder="余额调整">
             </div>
 
-            <button type="submit" class="btn btn-primary">保存余额</button>
+            <div class="save-button-group">
+                <button type="submit" class="btn btn-save-temp">暂时保存</button>
+                <button type="button" class="btn btn-print-receipt">打印小票</button>
+            </div>
         </form>
     </div>
 </div>
@@ -793,7 +805,10 @@
                 <input type="text" name="description" class="form-control" placeholder="退款原因">
             </div>
 
-            <button type="submit" class="btn btn-primary">保存退款</button>
+            <div class="save-button-group">
+                <button type="submit" class="btn btn-save-temp">暂时保存</button>
+                <button type="button" class="btn btn-print-receipt">打印小票</button>
+            </div>
         </form>
     </div>
 </div>
@@ -1644,6 +1659,15 @@ function selectAccount(type, accountValue, accountName, ev) {
 
     // 点击其他地方关闭所有抽屉
 document.addEventListener('click', function(event) {
+    // 检查点击的目标是否是左侧add按钮或add面板
+    const isAddButtonClick = event.target.closest('.add-button');
+    const isAddPanelClick = event.target.closest('#addPanel');
+    
+    // 如果点击的是add按钮或add面板，不执行关闭操作
+    if (isAddButtonClick || isAddPanelClick) {
+        return;
+    }
+    
     // 检查点击的目标是否在抽屉内部或触发按钮上
     const isFromDrawerClick = event.target.closest('#fromAccountDrawer');
     const isToDrawerClick = event.target.closest('#toAccountDrawer');
