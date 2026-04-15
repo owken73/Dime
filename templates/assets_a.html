@@ -1,0 +1,1171 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- 页面内容 -->
+
+<!-- ========================================== -->
+<!-- 第 1 段：三层线框容器（辅助轮 - 可拆卸）   -->
+<!-- ========================================== -->
+<div style="position: relative; width: 100%; height: 80vh;">
+    <!-- 白框区域（最底层） -->
+    <div id="whiteBox"
+        style="position: absolute; top: 0; left: 52%; right: 10px; bottom: calc(10% - 60px); border: 2px solid #ffffff; background-color: rgba(255,255,255,0.05); z-index: 15;">
+        <div style="padding: 10px;">
+            <strong style="color: #ffffff;">白框区域</strong>
+        </div>
+    </div>
+
+    <!-- 第二层抽屉：绿框图层底下 -->
+    <div id="drawer2" class="drawer2">
+        <div style="padding: 20px;">
+            <h3>📂 第二层抽屉 - 黄框右侧</h3>
+            <p>我在绿框图层底下，高度从黄框上顶到绿框下底</p>
+            <p>宽度从黄框右方到白框右侧</p>
+        </div>
+    </div>
+
+    <!-- 绿框区域 -->
+    <div id="greenBox"
+        style="position: absolute; top: calc(55% - 20px); left: 20px; right: calc(52% + 15px); bottom: calc(10% - 60px); border: 2px solid #00cc66; z-index: 15;">
+        <!-- 折线图容器 -->
+        <div style="width: 100%; height: 100%; position: relative;">
+            <canvas id="lineChart" style="width: 100%; height: 100%;"></canvas>
+        </div>
+    </div>
+
+    <!-- 第一层抽屉：黄框图层底下 -->
+    <div id="drawer1" class="drawer1">
+        <!-- 红框辅助线（可删除） -->
+        <div
+            style="position: absolute; top: 40px; left: 20px; right: 20px; bottom: 20px; border: 2px solid #ff0000; z-index: 10;">
+            <!-- 红框内 -->
+            <div id="redBoxInner" style="width: 100%; height: 100%; position: relative;">
+                <!-- 借入版本 -->
+                <div id="borrowedVersion"
+                    style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 10;">
+                    <div class="borrowed-content">
+                        <div style="color: #E2E2E2; font-size: 15px; font-weight: bold; margin-bottom: 5px;">借入</div>
+                        <div style="color: #9E9E9E; font-size: 8px;">当前借入:xxx¥</div>
+                    </div>
+                </div>
+
+                <!-- 借出版本 -->
+                <div id="lentVersion" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: none;">
+                    <div class="lent-content">
+                        <div style="color: #E2E2E2; font-size: 15px; font-weight: bold; margin-bottom: 5px;">借出</div>
+                        <div style="color: #9E9E9E; font-size: 8px;">当前借出:xxx¥</div>
+                    </div>
+                </div>
+
+                <!-- 分界线容器 -->
+                <div style="position: absolute; top: 25%; left: 0; right: 0; height: 1px; width: 100%;">
+                    <!-- 分割线：自上而下四分之一处 -->
+                    <div
+                        style="position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(to right, transparent, #FFFFFF 12px, #FFFFFF calc(100% - 12px), transparent); background-size: 100% 100%; background-position: center; background-repeat: no-repeat;">
+                    </div>
+                </div>
+                
+                <!-- 借入版本 - 无数据状态 -->
+                <div id="borrowedNoData" style="position: absolute; top: 25%; left: 0; right: 0; bottom: 0; display: flex; align-items: flex-start; justify-content: center; padding: 35px 20px 20px;">
+                    <div style="color: #9E9E9E; font-size: 8px; text-align: center; line-height: 1.5;">
+                        还没有数据<br>点击上方按钮添加数据
+                    </div>
+                </div>
+                
+                <!-- 借入版本 - 有数据状态 -->
+                <div id="borrowedWithData" style="position: absolute; top: 25%; left: 0; right: 0; bottom: 0; display: none; padding: 20px;">
+                    <div style="background-color: #282828; border-radius: 10px; padding: 15px; height: 100%; box-sizing: border-box;">
+                        <!-- 数据项 - 示例 -->
+                        <div style="background-color: #393939; border-radius: 7px; padding: 10px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+                            <div style="color: #E2E2E2;">vvv</div>
+                            <div style="color: #E2E2E2;">xxx¥</div>
+                        </div>
+                        <div style="background-color: #393939; border-radius: 7px; padding: 10px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+                            <div style="color: #E2E2E2;">vvv</div>
+                            <div style="color: #E2E2E2;">xxx¥</div>
+                        </div>
+                        <div style="background-color: #393939; border-radius: 7px; padding: 10px; display: flex; align-items: center; justify-content: space-between;">
+                            <div style="color: #E2E2E2;">vvv</div>
+                            <div style="color: #E2E2E2;">xxx¥</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 借出版本 - 无数据状态 -->
+                <div id="lentNoData" style="position: absolute; top: 25%; left: 0; right: 0; bottom: 0; display: none; align-items: flex-start; justify-content: center; padding: 35px 20px 20px;">
+                    <div style="color: #9E9E9E; font-size: 8px; text-align: center; line-height: 1.5;">
+                        还没有数据<br>点击上方按钮添加数据
+                    </div>
+                </div>
+                
+                <!-- 借出版本 - 有数据状态 -->
+                <div id="lentWithData" style="position: absolute; top: 25%; left: 0; right: 0; bottom: 0; display: none; padding: 20px;">
+                    <div style="background-color: #282828; border-radius: 10px; padding: 15px; height: 100%; box-sizing: border-box;">
+                        <!-- 数据项 - 示例 -->
+                        <div style="background-color: #393939; border-radius: 7px; padding: 10px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+                            <div style="color: #E2E2E2;">vvv</div>
+                            <div style="color: #E2E2E2;">xxx¥</div>
+                        </div>
+                        <div style="background-color: #393939; border-radius: 7px; padding: 10px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+                            <div style="color: #E2E2E2;">vvv</div>
+                            <div style="color: #E2E2E2;">xxx¥</div>
+                        </div>
+                        <div style="background-color: #393939; border-radius: 7px; padding: 10px; display: flex; align-items: center; justify-content: space-between;">
+                            <div style="color: #E2E2E2;">vvv</div>
+                            <div style="color: #E2E2E2;">xxx¥</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 圆形按钮：控制1.5层 -->
+        <button id="openDrawer15Btn"
+            style="position: absolute; top: 45px; right: 26px; width: 21px; height: 21px; border-radius: 50%; background: #393939; border: none; color: #9E9E9E; font-size: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 20; transition: background-color 0.3s ease;">
+            +
+        </button>
+        <style>
+            #openDrawer15Btn:hover {
+                background-color: #4a4a4a !important;
+            }
+        </style>
+    </div>
+
+    <!-- 1.5层：第一层下，第二层上 --> 
+ <div id="drawer15" class="drawer15"> 
+     <!-- 核心容器：253px × 458px --> 
+     <div class="borrow-form-container"> 
+         <h1 class="form-title">添加借入</h1> 
+
+         <div class="form-list"> 
+             <!-- 向谁借 --> 
+             <div class="form-item"> 
+                 <div class="form-item-left"> 
+                     <svg class="form-icon" viewBox="0 0 24 24" fill="none" stroke="#e0e0e0" stroke-width="2"> 
+                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path> 
+                         <circle cx="12" cy="7" r="4"></circle> 
+                     </svg> 
+                     <span class="form-label">向谁借</span> 
+                 </div> 
+                 <input id="borrowerName" class="form-value" type="text" placeholder="点击输入名称" value=""> 
+             </div> 
+
+             <!-- 借款金额 --> 
+             <div class="form-item"> 
+                 <div class="form-item-left"> 
+                     <svg class="form-icon" viewBox="0 0 24 24" fill="none" stroke="#e0e0e0" stroke-width="2"> 
+                         <rect x="2" y="5" width="20" height="14" rx="2"></rect> 
+                         <line x1="8" y1="10" x2="16" y2="10"></line> 
+                         <line x1="8" y1="14" x2="16" y2="14"></line> 
+                     </svg> 
+                     <span class="form-label">借款金额</span> 
+                 </div> 
+                 <input id="borrowAmount" class="form-value primary" type="number" placeholder="¥0" value="0"> 
+             </div> 
+
+             <!-- 借款账户 --> 
+             <div class="form-item"> 
+                 <div class="form-item-left"> 
+                     <svg class="form-icon" viewBox="0 0 24 24" fill="none" stroke="#e0e0e0" stroke-width="2"> 
+                         <rect x="1" y="4" width="22" height="16" rx="2"></rect> 
+                         <line x1="1" y1="10" x2="23" y2="10"></line> 
+                     </svg> 
+                     <span class="form-label">借款账户</span> 
+                 </div> 
+                 <select id="borrowAccount" class="form-value" placeholder="选择账户"> 
+                     <option value="现金">现金</option> 
+                     <option value="支付宝">支付宝</option> 
+                     <option value="微信">微信</option> 
+                     <option value="银行卡">银行卡</option> 
+                     <option value="云闪付">云闪付</option> 
+                     <option value="Apple Pay">Apple Pay</option> 
+                     <option value="其他">其他</option> 
+                 </select> 
+             </div> 
+
+             <!-- 借款备注 --> 
+             <div class="form-item"> 
+                 <div class="form-item-left"> 
+                     <svg class="form-icon" viewBox="0 0 24 24" fill="none" stroke="#e0e0e0" stroke-width="2"> 
+                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path> 
+                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path> 
+                     </svg> 
+                     <span class="form-label">借款备注</span> 
+                 </div> 
+                 <input id="borrowNote" class="form-value" type="text" placeholder="点击输入" value=""> 
+             </div> 
+
+             <!-- 借款日期 --> 
+             <div class="form-item"> 
+                 <div class="form-item-left"> 
+                     <span class="form-label">借款日期</span> 
+                 </div> 
+                 <input id="borrowDate" class="form-value" type="date" value="2026-04-14"> 
+             </div> 
+         </div> 
+
+         <button id="saveBorrowBtn" class="form-item" type="button">保存</button> 
+     </div> 
+ </div>
+
+    <!-- 黄框区域（最上层） -->
+    <div id="yellowBox"
+        style="position: absolute; top: 0; left: 20px; right: calc(52% + 15px); height: 45%; border: 2px solid #ffcc00; z-index: 50;">
+        <!-- 整体外层大容器 -->
+        <div style="width: 100%; height: 100%; box-sizing: border-box;">
+            <div
+                style="width: 100%; height: 100%; background-color: #232323; border-radius: 20px; display: flex; flex-direction: column; gap: 10px; padding: 10px; box-sizing: border-box; position: relative;">
+                <!-- 分界线：从上往下的35%处 -->
+                <div style="position: absolute; top: 35%; left: 0; right: 0; height: 1px; background-color: #2C2C2C;">
+                </div>
+                <!-- 净资产标题 -->
+                <div
+                    style="flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px; padding-bottom: 0;">
+                    <div
+                        style="color: #858585; font-size: 12px; font-weight: normal; margin-top: -15px; margin-bottom: 3px;">
+                        净资产</div>
+                    <div
+                        style="background-color: #282828; border-radius: 60px; padding: 6px 13px; display: flex; align-items: center; justify-content: center; margin-bottom: 6px;">
+                        <div
+                            style="color: #FFFFFF; font-size: 14px;margin-top: -13px; margin-top: -2px;font-weight: bold;">
+                            ¥6,026</div>
+                    </div>
+                </div>
+
+                <!-- 下方左右模块容器 -->
+                <div
+                    style="flex: 1; display: flex; gap: 2px; padding: 4px; padding-top: 3px; padding-bottom: 4px; padding-left: 4px; padding-right: 4px;">
+                    <!-- 左侧模块 -->
+                    <div style="flex: 1; display: flex; flex-direction: column; gap: 2px;">
+                        <!-- 左侧「资产」模块 -->
+                        <div
+                            style="width: 145px; height: 55px;  background-color: #393939; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                            <div style="color: #9E9E9E; font-size: 12px; font-weight: normal; margin-bottom: 8px;">资产
+                            </div>
+                            <div style="color: #E2E2E2; font-size: 12px; font-weight: bold;">¥6,026</div>
+                        </div>
+
+                        <!-- 左侧「借入」模块 -->
+                        <div id="borrowedBox"
+                            style="width: 145px; height: 55px; background-color: #393939; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;">
+                            <div style="color: #9E9E9E; font-size: 12px; font-weight: normal; margin-bottom: 8px;">借入
+                            </div>
+                            <div style="color: #E2E2E2; font-size: 12px; font-weight: bold;">0</div>
+                        </div>
+                    </div>
+
+                    <!-- 右侧模块 -->
+                    <div style="flex: 1; display: flex; flex-direction: column; gap: 2px;">
+                        <!-- 右侧「负债」模块 -->
+                        <div
+                            style="width: 145px; height: 55px; background-color: #393939; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                            <div style="color: #9E9E9E; font-size: 12px; font-weight: normal; margin-bottom: 8px;">负债
+                            </div>
+                            <div style="color: #E2E2E2; font-size: 12px; font-weight: bold;">¥0</div>
+                        </div>
+
+                        <!-- 右侧「借出」模块 -->
+                        <div id="lentBox"
+                            style="width: 145px; height: 55px; background-color: #393939; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;">
+                            <div style="color: #9E9E9E; font-size: 12px; font-weight: normal; margin-bottom: 8px;">借出
+                            </div>
+                            <div style="color: #E2E2E2; font-size: 12px; font-weight: bold;">¥200</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 底部小箭头（原有内容，保留） -->
+<div
+    style="position: fixed; bottom: 20px; left: 17%; right: 0; display: flex; justify-content: space-between; padding: 0 20px;">
+    <a href="/assets/c" style="color: #b0b0b0; text-decoration: none; font-size: 10px;">
+        <i class="fas fa-chevron-left"></i>
+    </a>
+    <span style="color: #666666; font-size: 0.8rem;">● · ·</span>
+    <a href="/assets/b" style="color: #b0b0b0; text-decoration: none; font-size: 10px;">
+        <i class="fas fa-chevron-right"></i>
+    </a>
+</div>
+
+<!-- ========================================== -->
+<!-- 第 2 段：三个基础按钮（辅助轮 - 可拆卸）   -->
+<!-- ========================================== -->
+<script>
+    (function addBasicButtons() {
+        // 白框按钮
+        const whiteBox = document.getElementById('whiteBox');
+        if (whiteBox && !document.getElementById('whiteBtn')) {
+            const btn = document.createElement('button');
+            btn.id = 'whiteBtn';
+            btn.textContent = '白框按钮 - 点我';
+            btn.style.margin = '10px 0';
+            btn.style.padding = '6px 12px';
+            btn.style.background = '#cccccc';
+            btn.style.border = 'none';
+            btn.style.cursor = 'pointer';
+            whiteBox.querySelector('div').appendChild(btn);
+        }
+    })();
+</script>
+
+<!-- ========================================== -->
+<!-- 第 3 段：CSS 样式（辅助轮 - 可拆卸）       -->
+<!-- ========================================== -->
+<style>
+    /* 第一层抽屉：向下滑动 */
+    .drawer1 {
+        position: absolute;
+        top: 41%;
+        /* 黄框底部位置 */
+        left: 20px;
+        right: calc(52% + 15px);
+        height: 285px;
+        /* 固定高度 */
+        background: #232323;
+        box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.3);
+        z-index: 40;
+        /* 从 20 改为 40，高于绿框的 30 */
+        overflow: hidden;
+        transition: max-height 0.4s ease-out;
+        max-height: 0;
+        pointer-events: auto;
+        border-radius: 0 0 20px 20px;
+    }
+
+    .drawer1.open {
+        max-height: 2000px;
+        /* 改成更大的值，确保抽屉可以完全展开 */
+    }
+
+    /* 1.5层：第一层下，第二层上 */
+    .drawer15 {
+        position: absolute;
+        top: 45%; /* 与黄框底端对齐 */
+        left: calc(52% - 62px);
+        right: 10px;
+        bottom: calc(10% - 60px); /* 与绿框下底重合 */
+        width: 0px;
+        background: #232323;
+        box-shadow: -4px 0 12px rgba(0, 0, 0, 0.2);
+        z-index: 30;
+        /* 在第一层下，第二层上 */
+        overflow: hidden;
+        transition: width 0.4s ease-out;
+        pointer-events: auto;
+        border-radius: 0 20px 20px 0;
+    }
+
+    .drawer15.open {
+        width: 33.33%;
+        /* 白框的三分之一 */
+    }
+
+    /* 第二层抽屉：向右滑动 */
+    .drawer2 {
+        position: absolute;
+        top: 0;
+        left: calc(52% - 62px);
+        right: 10px;
+        width: 0px;
+        height: 472px;
+        background: rgba(255, 0, 0, 0.5);
+        box-shadow: -4px 0 12px rgba(0, 0, 0, 0.2);
+        z-index: 20;
+        /* 低于绿框，高于白框 */
+        overflow: hidden;
+        transition: width 0.4s ease-out;
+        pointer-events: auto;
+    }
+
+    .drawer2.open {
+        width: 100%;
+    }
+
+    .drawer2>div {
+        width: 100%;
+        height: 100%;
+        box-sizing: border-box;
+    }
+
+    /* 四个框的悬停效果：颜色变浅，饱和度增加10% */
+    #yellowBox div[style*="background-color: #393939"]:hover {
+        background-color: #4a4a4a !important;
+    }
+    
+    /* 借入和借出内容样式 */
+    .borrowed-content {
+        position: absolute !important;
+        top: 10px !important;
+        left: 0 !important;
+        right: 0 !important;
+        text-align: center !important;
+    }
+    
+    .lent-content {
+        position: absolute !important;
+        top: 10px !important;
+        left: 0 !important;
+        right: 0 !important;
+        text-align: center !important;
+    }
+
+    /* 全局重置 - 无任何默认底色 */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    /* 页面整体透明 */
+    body {
+        background: transparent;
+    }
+
+    /* 核心蓝框容器：151.8px × 274.8px（原126.5×229的1.2倍） */ 
+     .borrow-form-container { 
+         width: 151.8px; 
+         height: 274.8px; 
+         background: transparent; 
+         padding: 9px 7px; 
+         display: flex; 
+         flex-direction: column; 
+         position: relative; 
+         overflow: hidden; 
+         box-sizing: border-box; 
+         transform: scale(1); 
+     } 
+
+     /* 标题：9.5px（原6.5px + 3px） */ 
+     .form-title { 
+         font-size: 9.5px; 
+         color: #ffffff; 
+         text-align: center; 
+         margin-bottom: 11px; 
+         font-weight: 500; 
+         flex-shrink: 0; 
+     } 
+
+     /* 表单列表：间距5px（原10px的一半） */ 
+     .form-list { 
+         flex: 1; 
+         display: flex; 
+         flex-direction: column; 
+         gap: 5px; 
+         margin-bottom: 8px; 
+         min-height: 0; 
+         overflow-y: auto; 
+     } 
+
+     /* 表单项：高度21px（原42px的一半） */ 
+     .form-item { 
+         min-height: 21px; 
+         background-color: #1e1e1e; 
+         border-radius: 5px; 
+         padding: 0 10px 0 0; 
+         display: flex; 
+         align-items: center; 
+         justify-content: space-between; 
+         flex-shrink: 0; 
+     } 
+
+     .form-item-left { 
+         display: flex; 
+         align-items: center; 
+         gap: 6px; 
+         padding-left: 10px; 
+     } 
+
+     /* 图标：10.5px × 10.5px（原7.5px + 3px） */ 
+     .form-icon { 
+         width: 10.5px; 
+         height: 10.5px; 
+         opacity: 0.7; 
+         flex-shrink: 0; 
+     } 
+
+     /* 标签文字：7px（原4px + 3px） */ 
+     .form-label { 
+         font-size: 7px; 
+         color: #e0e0e0; 
+         white-space: nowrap; 
+         line-height: 21px; 
+     } 
+
+     /* 数值文字：7px（原4px + 3px） */ 
+     .form-value { 
+         font-size: 7px; 
+         color: #9e9e9e; 
+         white-space: nowrap; 
+         background: transparent; 
+         border: none; 
+         outline: none; 
+         text-align: center; 
+         padding: 4px 0; 
+         margin: 0; 
+         min-width: 60px; 
+         cursor: pointer; 
+     } 
+
+     .form-value option { 
+         background-color: #1e1e1e; 
+         color: #9e9e9e; 
+         padding: 4px; 
+     } 
+
+     /* 自定义下拉箭头大小 */ 
+     select.form-value { 
+         -webkit-appearance: none; 
+         -moz-appearance: none; 
+         appearance: none; 
+         background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="5" height="5" viewBox="0 0 24 24" fill="none" stroke="%239e9e9e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>'); 
+         background-repeat: no-repeat; 
+         background-position: right 0 center; 
+         padding-right: 12px; 
+     } 
+
+     .form-value.primary { 
+         color: #ffffff; 
+     } 
+
+     /* 右侧箭头组合：间距8px（原5px + 3px） */ 
+     .form-item-arrow { 
+         display: flex; 
+         align-items: center; 
+         gap: 8px; 
+         flex-shrink: 0; 
+     } 
+
+     /* 箭头：6.5px（原3.5px + 3px） */ 
+     .arrow-icon { 
+         width: 6.5px; 
+         height: 6.5px; 
+         border-right: 0.75px solid #9e9e9e; 
+         border-bottom: 0.75px solid #9e9e9e; 
+         transform: rotate(-45deg); 
+         flex-shrink: 0; 
+     } 
+
+     /* 开关按钮：23px × 14px（原20×11 + 3px） */ 
+     .switch { 
+         width: 23px; 
+         height: 14px; 
+         background-color: #333333; 
+         border-radius: 7px; 
+         position: relative; 
+         flex-shrink: 0; 
+         cursor: pointer; 
+     } 
+
+     .switch.active { 
+         background-color: #424242; 
+     } 
+
+     .switch-slider { 
+         position: absolute; 
+         top: 1px; 
+         right: 1px; 
+         width: 12px; 
+         height: 12px; 
+         background-color: #ffffff; 
+         border-radius: 50%; 
+         display: flex; 
+         align-items: center; 
+         justify-content: center; 
+     } 
+
+     /* 对勾：6.5px（原3.5px + 3px） */ 
+     .check-mark { 
+         width: 6.5px; 
+         height: 6.5px; 
+         border-right: 1px solid #333; 
+         border-bottom: 1px solid #333; 
+         transform: rotate(45deg); 
+     } 
+
+     /* 保存按钮：与表单项目一致 */ 
+     .form-item[type="button"], .form-item[type="submit"] { 
+         justify-content: center; 
+         color: #ffffff; 
+         font-size: 7px; 
+         cursor: pointer; 
+         background-color: #393939; 
+         margin-top: -5px; 
+     }
+</style>
+
+<!-- ========================================== -->
+<!-- 第 4 段：JS 交互逻辑（辅助轮 - 可拆卸）    -->
+<!-- ========================================== -->
+<script>
+    (function initDrawers() {
+        // 获取元素
+        const yellowBox = document.getElementById('yellowBox');
+        const greenBox = document.getElementById('greenBox');
+        const whiteBox = document.getElementById('whiteBox');
+        const drawer1 = document.getElementById('drawer1');
+        const drawer15 = document.getElementById('drawer15');
+        const drawer2 = document.getElementById('drawer2');
+
+        // 获取按钮（可能还没创建，延迟一下）
+        function getButtons() {
+            return {
+                yellowBtn: document.getElementById('yellowBtn'),
+                greenBtn: document.getElementById('greenBtn'),
+                whiteBtn: document.getElementById('whiteBtn'),
+                openDrawer1Btn: document.getElementById('openDrawer1Btn'),
+                openDrawer2Btn: document.getElementById('openDrawer2Btn'),
+                closeDrawer1Btn: document.getElementById('closeDrawer1Btn'),
+                closeDrawer2Btn: document.getElementById('closeDrawer2Btn')
+            };
+        }
+
+        // ========= 1. 基础按钮弹窗 =========
+        function bindBasicAlerts() {
+            const btns = getButtons();
+            if (btns.greenBtn) {
+                btns.greenBtn.addEventListener('click', () => alert('打开啦'));
+            }
+            if (btns.whiteBtn) {
+                btns.whiteBtn.addEventListener('click', () => alert('打开啦'));
+            }
+        }
+
+        // ========= 2. 第一层抽屉：动态高度计算 =========
+        function setDrawer1Height() {
+            if (!yellowBox || !greenBox || !drawer1) return;
+            const desiredHeight = 400; // 使用固定高度400px
+            drawer1.dataset.targetHeight = desiredHeight;
+
+            if (drawer1.classList.contains('open')) {
+                drawer1.style.maxHeight = desiredHeight + 'px';
+            }
+        }
+
+        function openDrawer1() {
+            if (!drawer1.dataset.targetHeight) setDrawer1Height();
+            // 先设置高度，再添加类
+            drawer1.style.maxHeight = drawer1.dataset.targetHeight + 'px';
+            drawer1.classList.add('open');
+        }
+
+        function closeDrawer1() {
+            // 检查各层抽屉是否打开
+            const isDrawer2Open = drawer2 && drawer2.classList.contains('open');
+            const isDrawer15Open = drawer15 && drawer15.classList.contains('open');
+
+            if (isDrawer2Open) {
+                // 3个抽屉都打开，先关闭1.5和2，然后0.5秒后关闭1
+                closeDrawer15();
+                closeDrawer2();
+                setTimeout(() => {
+                    drawer1.classList.remove('open');
+                    drawer1.style.maxHeight = '0';
+                }, 500); // 0.5秒延迟
+            } else if (isDrawer15Open) {
+                // 1.5和1都打开，先关闭1.5，然后0.5秒后关闭1
+                closeDrawer15();
+                setTimeout(() => {
+                    drawer1.classList.remove('open');
+                    drawer1.style.maxHeight = '0';
+                }, 500); // 0.5秒延迟
+            } else {
+                // 只有1打开，直接关闭
+                drawer1.classList.remove('open');
+                drawer1.style.maxHeight = '0';
+                closeDrawer15(); // 同时关闭1.5层
+            }
+        }
+
+        // ========= 3. 第二层抽屉：动态宽度计算 =========
+        function setDrawer2Width() {
+            if (!yellowBox || !whiteBox || !drawer2) return;
+            const yellowRect = yellowBox.getBoundingClientRect();
+            const whiteRect = whiteBox.getBoundingClientRect();
+            // 宽度：黄框右边线 → 白框右边线
+            const desiredWidth = (whiteRect.right - yellowRect.right) + 16;
+            drawer2.dataset.targetWidth = desiredWidth;
+
+            if (drawer2.classList.contains('open')) {
+                drawer2.style.width = desiredWidth + 'px';
+            }
+        }
+
+        function openDrawer2() {
+            if (!drawer2.dataset.targetWidth) setDrawer2Width();
+            drawer2.classList.add('open');
+            drawer2.style.width = drawer2.dataset.targetWidth + 'px';
+        }
+
+        function closeDrawer2() {
+            drawer2.classList.remove('open');
+            drawer2.style.width = '0';
+        }
+
+        // ========= 3.5 1.5层：动态宽度计算 =========
+        function setDrawer15Width() {
+            if (!yellowBox || !whiteBox || !drawer15) return;
+            const yellowRect = yellowBox.getBoundingClientRect();
+            const whiteRect = whiteBox.getBoundingClientRect();
+            // 宽度：黄框右边线 → 白框右边线 的五分之二
+            const desiredWidth = (whiteRect.right - yellowRect.right) * 0.4;
+            drawer15.dataset.targetWidth = desiredWidth;
+
+            if (drawer15.classList.contains('open')) {
+                drawer15.style.width = desiredWidth + 'px';
+            }
+        }
+
+        function openDrawer15() {
+            if (!drawer15.dataset.targetWidth) setDrawer15Width();
+            drawer15.classList.add('open');
+            drawer15.style.width = drawer15.dataset.targetWidth + 'px';
+        }
+
+        function closeDrawer15() {
+            drawer15.classList.remove('open');
+            drawer15.style.width = '0';
+        }
+
+        // ========= 4. 绑定所有交互事件 =========
+        function bindDrawerEvents() {
+            const btns = getButtons();
+
+            // 黄框按钮 → 弹窗
+            if (btns.yellowBtn) {
+                btns.yellowBtn.addEventListener('click', () => alert('打开啦'));
+            }
+
+            // 为借入和借出框添加点击事件，绑定展开/收起抽屉功能
+            const borrowedBox = document.getElementById('borrowedBox');
+            const lentBox = document.getElementById('lentBox');
+            const borrowedVersion = document.getElementById('borrowedVersion');
+            const lentVersion = document.getElementById('lentVersion');
+
+            // 记录上次点击的按钮
+            let lastClickedBtn = null;
+            
+            if (borrowedBox) {
+                borrowedBox.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    // 显示借入版本，隐藏借出版本
+                    if (borrowedVersion) {
+                        borrowedVersion.style.display = 'flex';
+                        borrowedVersion.style.paddingTop = '16px';
+                    }
+                    if (lentVersion) lentVersion.style.display = 'none';
+                    
+                    // 检查是否点击的是同一个按钮
+                    if (lastClickedBtn === 'borrowed') {
+                        // 点击同一按钮两下，关闭抽屉
+                        if (drawer1.classList.contains('open')) {
+                            closeDrawer1();
+                            lastClickedBtn = null;
+                        }
+                    } else {
+                        // 点击不同按钮或首次点击，打开抽屉
+                        if (!drawer1.classList.contains('open')) {
+                            openDrawer1();
+                        }
+                        lastClickedBtn = 'borrowed';
+                    }
+                });
+            }
+            if (lentBox) {
+                lentBox.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    // 显示借出版本，隐藏借入版本
+                    if (borrowedVersion) borrowedVersion.style.display = 'none';
+                    if (lentVersion) {
+                        lentVersion.style.display = 'flex';
+                        lentVersion.style.paddingTop = '16px';
+                    }
+                    
+                    // 检查是否点击的是同一个按钮
+                    if (lastClickedBtn === 'lent') {
+                        // 点击同一按钮两下，关闭抽屉
+                        if (drawer1.classList.contains('open')) {
+                            closeDrawer1();
+                            lastClickedBtn = null;
+                        }
+                    } else {
+                        // 点击不同按钮或首次点击，打开抽屉
+                        if (!drawer1.classList.contains('open')) {
+                            openDrawer1();
+                        }
+                        lastClickedBtn = 'lent';
+                    }
+                });
+            }
+
+            // 为圆形按钮添加点击事件，切换1.5层的打开/关闭状态
+            const openDrawer15Btn = document.getElementById('openDrawer15Btn');
+            if (openDrawer15Btn) {
+                openDrawer15Btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (drawer15.classList.contains('open')) {
+                        closeDrawer15();
+                    } else {
+                        openDrawer15();
+                    }
+                });
+            }
+
+            // 打开第一层抽屉按钮
+            if (btns.openDrawer1Btn) {
+                btns.openDrawer1Btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openDrawer1();
+                });
+            }
+
+            // 第一层抽屉内按钮
+            if (btns.openDrawer2Btn) {
+                btns.openDrawer2Btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openDrawer2();
+                });
+            }
+
+            // 点击抽屉外区域关闭抽屉
+            document.addEventListener('click', (e) => {
+                const isDrawer1Open = drawer1 && drawer1.classList.contains('open');
+                const isDrawer15Open = drawer15 && drawer15.classList.contains('open');
+                const isDrawer2Open = drawer2 && drawer2.classList.contains('open');
+
+                if ((isDrawer1Open || isDrawer15Open || isDrawer2Open) && !drawer1.contains(e.target) && !drawer15.contains(e.target) && !drawer2.contains(e.target)) {
+                    closeDrawer1(); // 调用closeDrawer1，它会先关闭第二层抽屉，再关闭第一层抽屉和1.5层
+                }
+            });
+
+            // 阻止抽屉内点击事件冒泡
+            if (drawer1) {
+                drawer1.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                });
+            }
+
+            if (drawer15) {
+                drawer15.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                });
+            }
+
+            if (drawer2) {
+                drawer2.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                });
+            }
+
+            // 借款表单功能
+            initBorrowForm();
+        }
+
+        // 借款表单初始化
+        function initBorrowForm() {
+            // 存储数据
+            function saveBorrowData(data) {
+                localStorage.setItem('borrowData', JSON.stringify(data));
+            }
+
+            // 读取数据
+            function loadBorrowData() {
+                const data = localStorage.getItem('borrowData');
+                return data ? JSON.parse(data) : null;
+            }
+
+            // 显示已有记录
+            function displayRecords() {
+                const data = loadBorrowData();
+                if (data) {
+                    document.getElementById('borrowerName').value = data.name || '';
+                    document.getElementById('borrowAmount').value = data.amount || '0';
+                    document.getElementById('borrowAccount').value = data.account || '';
+                    document.getElementById('borrowNote').value = data.note || '';
+                    document.getElementById('borrowDate').value = data.date || '2026-04-14';
+                }
+            }
+
+            // 绑定保存按钮事件
+            const saveBtn = document.getElementById('saveBorrowBtn');
+            if (saveBtn) {
+                saveBtn.addEventListener('click', () => {
+                    const data = {
+                        name: document.getElementById('borrowerName').value,
+                        amount: document.getElementById('borrowAmount').value,
+                        account: document.getElementById('borrowAccount').value,
+                        note: document.getElementById('borrowNote').value,
+                        date: document.getElementById('borrowDate').value
+                    };
+                    
+                    saveBorrowData(data);
+                    alert('保存成功！');
+                });
+            }
+
+            // 初始化显示数据
+            displayRecords();
+        }
+
+        // ========= 5. 监听窗口变化 ==========
+        window.addEventListener('resize', () => {
+            setDrawer1Height();
+            setDrawer15Width();
+            setDrawer2Width();
+        });
+
+        // ========= 6. 初始化（等待 DOM 完全加载） =========
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                setDrawer1Height();
+                setDrawer15Width();
+                setDrawer2Width();
+                bindBasicAlerts();
+                bindDrawerEvents();
+            });
+        } else {
+            setDrawer1Height();
+            setDrawer15Width();
+            setDrawer2Width();
+            bindBasicAlerts();
+            bindDrawerEvents();
+        }
+    })();
+</script>
+
+    <!-- 折线图脚本 -->
+    <script>
+        (function initLineChart() {
+            const canvas = document.getElementById('lineChart');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            let chartData = [];
+            let hoveredIndex = -1;
+            
+            // 确保canvas尺寸正确
+            function resizeCanvas() {
+                const container = canvas.parentElement;
+                canvas.width = container.clientWidth;
+                canvas.height = container.clientHeight;
+            }
+            
+            resizeCanvas();
+            window.addEventListener('resize', () => {
+                resizeCanvas();
+                drawChart(chartData);
+            });
+            
+            // 生成模拟数据（包含负数）
+            function generateData(months = 12) {
+                const data = [];
+                const now = new Date();
+                
+                for (let i = months - 1; i >= 0; i--) {
+                    const date = new Date(now);
+                    date.setMonth(now.getMonth() - i);
+                    
+                    data.push({
+                        month: date.getMonth() + 1,
+                        year: date.getFullYear(),
+                        value: (Math.random() - 0.3) * 150 // 模拟值，包含负数
+                    });
+                }
+                
+                return data;
+            }
+            
+            // 绘制折线图
+            function drawChart(data = []) {
+                const width = canvas.width;
+                const height = canvas.height;
+                const scale = 0.9; // 缩小到90%
+                const offsetX = width * (1 - scale) / 2;
+                const offsetY = height * (1 - scale) / 2;
+                
+                // 清空画布
+                ctx.clearRect(0, 0, width, height);
+                
+                // 应用缩放变换
+                ctx.save();
+                ctx.translate(offsetX, offsetY);
+                ctx.scale(scale, scale);
+                
+                // 绘制坐标轴
+                ctx.strokeStyle = 'rgba(150, 150, 150, 0.6)'; // 饱和度60%的浅灰色
+                ctx.lineWidth = 1;
+                
+                // 竖轴（与绿框左边重合）
+                const axisPadding = 10; // 为0点留出空间，整体向左挪5px
+                ctx.beginPath();
+                ctx.moveTo(axisPadding, 0);
+                ctx.lineTo(axisPadding, height);
+                ctx.stroke();
+                
+                // 计算横轴位置（0点）
+                let horizontalAxisY;
+                if (data.length === 0) {
+                    // 没有数据时，横轴过绿框中点
+                    horizontalAxisY = height / 2;
+                } else {
+                    // 有数据时，自动调整横轴位置
+                    const values = data.map(item => item.value);
+                    const minValue = Math.min(...values);
+                    const maxValue = Math.max(...values);
+                    
+                    // 确保0点在可视范围内
+                    if (minValue > 0) {
+                        horizontalAxisY = height - 20;
+                    } else if (maxValue < 0) {
+                        horizontalAxisY = 20;
+                    } else {
+                        // 0点在数据范围内，计算合适位置
+                        const range = maxValue - minValue || 100;
+                        horizontalAxisY = height - 20 - ((0 - minValue) / range) * (height - 40);
+                    }
+                }
+                
+                // 横轴
+                ctx.beginPath();
+                ctx.moveTo(axisPadding, horizontalAxisY);
+                ctx.lineTo(width, horizontalAxisY);
+                ctx.stroke();
+                
+                // 绘制0点
+                ctx.fillStyle = 'rgba(150, 150, 150, 1)';
+                ctx.font = '10px Arial';
+                ctx.textAlign = 'right';
+                ctx.fillText('0', axisPadding - 5, horizontalAxisY + 4);
+                
+                if (data.length > 0) {
+                    // 绘制折线
+                    ctx.strokeStyle = 'rgba(180, 180, 180, 0.7)'; // 更浅的灰色
+                    ctx.lineWidth = 2;
+                    
+                    const values = data.map(item => item.value);
+                    const minValue = Math.min(...values);
+                    const maxValue = Math.max(...values);
+                    const range = maxValue - minValue || 100;
+                    
+                    // 存储各点的位置，用于鼠标悬浮
+                    const points = [];
+                    
+                    ctx.beginPath();
+                    data.forEach((item, index) => {
+                        const x = axisPadding + (index / (data.length - 1)) * (width - axisPadding);
+                        const y = height - 20 - ((item.value - minValue) / range) * (height - 40);
+                        points.push({ x, y, value: item.value });
+                        
+                        if (index === 0) {
+                            ctx.moveTo(x, y);
+                        } else {
+                            ctx.lineTo(x, y);
+                        }
+                    });
+                    ctx.stroke();
+                    
+                    // 绘制悬浮金额
+                    if (hoveredIndex >= 0 && hoveredIndex < points.length) {
+                        const point = points[hoveredIndex];
+                        
+                        // 绘制金额
+                        ctx.fillStyle = 'rgba(255, 255, 255, 1)';
+                        ctx.font = '10px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.fillText(`¥${point.value.toFixed(2)}`, point.x, point.y - 10);
+                    }
+                }
+                
+                // 绘制月份标签
+                if (data.length > 0) {
+                    ctx.font = '10px Arial';
+                    ctx.textAlign = 'center';
+                    
+                    data.forEach((item, index) => {
+                        const x = axisPadding + (index / (data.length - 1)) * (width - axisPadding);
+                        
+                        // 绘制月份
+                        if (index === hoveredIndex) {
+                            // 鼠标悬浮时，饱和度90%
+                            ctx.fillStyle = 'rgba(150, 150, 150, 0.9)';
+                        } else {
+                            // 正常状态，饱和度60%
+                            ctx.fillStyle = 'rgba(150, 150, 150, 0.6)';
+                        }
+                        ctx.fillText(item.month, x, height - 7); // 月份向上移动2px
+                        
+                        // 绘制年份（如果年份变化）
+                        if (index > 0) {
+                            const prevYear = data[index - 1].year;
+                            if (item.year !== prevYear) {
+                                ctx.font = '8px Arial';
+                                ctx.fillText(item.year, x, height);
+                                ctx.font = '10px Arial';
+                            }
+                        } else {
+                            // 第一个月份也显示年份
+                            ctx.font = '8px Arial';
+                            ctx.fillText(item.year, x, height);
+                            ctx.font = '10px Arial';
+                        }
+                    });
+                }
+                
+                // 恢复画布状态
+                ctx.restore();
+            }
+            
+            // 处理鼠标移动事件
+            canvas.addEventListener('mousemove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+                
+                if (chartData.length > 0) {
+                    const width = canvas.width;
+                    const height = canvas.height;
+                    const scale = 0.9; // 与绘制时保持一致
+                    const offsetX = width * (1 - scale) / 2;
+                    const offsetY = height * (1 - scale) / 2;
+                    
+                    // 调整鼠标坐标以适应缩放
+                    const scaledMouseX = (mouseX - offsetX) / scale;
+                    const scaledMouseY = (mouseY - offsetY) / scale;
+                    
+                    const axisPadding = 10; // 与绘制时保持一致
+                    const monthWidth = (width - axisPadding) / (chartData.length - 1);
+                    
+                    // 计算鼠标悬停在哪个月份上
+                    const index = Math.round((scaledMouseX - axisPadding) / monthWidth);
+                    
+                    if (index >= 0 && index < chartData.length) {
+                        const x = axisPadding + index * monthWidth;
+                        // 检查鼠标是否在月份标签附近
+                        if (scaledMouseX >= x - 20 && scaledMouseX <= x + 20 && scaledMouseY >= height - 20) {
+                            hoveredIndex = index;
+                        } else {
+                            hoveredIndex = -1;
+                        }
+                    } else {
+                        hoveredIndex = -1;
+                    }
+                    
+                    drawChart(chartData);
+                }
+            });
+            
+            // 处理鼠标离开事件
+            canvas.addEventListener('mouseleave', () => {
+                hoveredIndex = -1;
+                drawChart(chartData);
+            });
+            
+            // 初始绘制
+            chartData = generateData();
+            drawChart(chartData);
+        })();
+    </script>
+{% endblock %}

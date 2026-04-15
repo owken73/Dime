@@ -1,0 +1,187 @@
+/* 流水界面样式 */
+.flow-container {
+    background-color: #1a1a1a;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* 筛选栏样式 */
+.flow-filter {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background-color: #252525;
+    border-radius: 8px;
+}
+
+.filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: flex-end;
+}
+
+.filter-item {
+    flex: 1;
+    min-width: 150px;
+}
+
+.filter-item label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #808080;
+    font-size: 0.9rem;
+}
+
+.filter-item select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #404040;
+    border-radius: 4px;
+    background-color: #1a1a1a;
+    color: #ffffff;
+}
+
+.filter-item button {
+    width: 100%;
+    padding: 0.5rem;
+    border: none;
+    border-radius: 4px;
+    background-color: #6c5ce7;
+    color: #ffffff;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.filter-item button:hover {
+    background-color: #5a4bc7;
+}
+
+/* 流水列表样式 */
+.flow-list {
+    margin-top: 1rem;
+}
+
+.flow-date-group {
+    margin-bottom: 2rem;
+}
+
+.date-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #333333;
+}
+
+.date-header h3 {
+    color: #ffffff;
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin: 0;
+}
+
+.day-total {
+    color: #808080;
+    font-size: 0.9rem;
+}
+
+/* 流水项样式 */
+.flow-item {
+    margin-bottom: 0.75rem;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.flow-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.flow-item-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: #252525;
+    border-radius: 8px;
+}
+
+.flow-item-left {
+    flex: 1;
+}
+
+.flow-item-category {
+    color: #ffffff;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+}
+
+.flow-item-description {
+    color: #808080;
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+}
+
+.flow-item-account {
+    color: #808080;
+    font-size: 0.8rem;
+}
+
+.flow-item-right {
+    text-align: right;
+}
+
+.flow-item-amount {
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+}
+
+.flow-item-time {
+    color: #808080;
+    font-size: 0.8rem;
+}
+
+/* 不同类型的流水项样式 */
+.flow-item.expense .flow-item-amount {
+    color: #ff6b6b;
+}
+
+.flow-item.income .flow-item-amount {
+    color: #4ecdc4;
+}
+
+.flow-item.transfer .flow-item-amount {
+    color: #45b7d1;
+}
+
+.flow-item.balance .flow-item-amount {
+    color: #96ceb4;
+}
+
+.flow-item.refund .flow-item-amount {
+    color: #ffeaa7;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .filter-row {
+        flex-direction: column;
+    }
+    
+    .filter-item {
+        width: 100%;
+    }
+    
+    .flow-item-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .flow-item-right {
+        align-self: flex-end;
+    }
+}

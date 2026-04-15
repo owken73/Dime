@@ -1,0 +1,264 @@
+/* 默认隐藏（等 JS 决定显示） */
+.stats-submenu,
+.assets-submenu {
+    display: none;
+}
+
+
+.sidebar {
+    z-index: 1020 !important;  /* 用很大的值，确保在最上面 */
+    position: relative;  /* z-index 需要配合 position 使用 */
+}
+
+/* ======== 全局深灰主色 ======== */
+body {
+    background-color: #1a1a1a;
+    color: #ffffff;
+}
+
+/* ======== 导航栏样式 ======== */
+.sidebar {
+    background-color: #1f1f1f;
+    border-right: 1px solid #333333;
+    min-height: 100vh;
+}
+
+/* 项目名称 */
+.sidebar h4 {
+    color: #ffffff;
+    font-weight: 500;
+}
+
+/* 导航链接 - 正常状态 */
+.nav-link {
+    color: #b0b0b0;
+    padding: 0.6rem 1rem;
+    margin: 0.2rem 0;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+}
+
+/* 鼠标悬停 */
+.nav-link:hover {
+    background-color: #2a2a2a;
+    color: #ffffff;
+}
+
+/* 当前选中项 */
+.nav-link.active {
+    background-color: #3a3a3a;
+    color: #ffffff !important;
+}
+
+/* 图标样式 */
+.nav-link i {
+    margin-right: 0.75rem;
+    width: 1.5rem;
+    text-align: center;
+    font-size: 1.1rem;
+    color: #e0e0e0;
+}
+
+.nav-link.active i {
+    color: #ffffff;
+}
+
+/* 分隔线 */
+.sidebar hr {
+    border-top: 1px solid #333333;
+    opacity: 1;
+}
+
+/* ======== 右侧内容区基础 ======== */
+.content-area {
+    background-color: #1a1a1a;
+    padding: 2rem;
+    min-height: 100vh;
+}
+
+/* 页面标题 */
+.content-area h2 {
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 1.8rem;
+    opacity: 0.9;
+}
+
+/* ======== 卡片基础样式（无颜色，只留结构和动画） ======== */
+.card {
+    background-color: #2a2a2a;
+    border: 1px solid #333333;
+    border-radius: 16px;
+    transition: all 0.2s ease;
+    overflow: hidden;
+}
+
+/*卡片上浮
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+}
+*/
+
+.card-header {
+    background-color: transparent;
+    border-bottom: 1px solid #404040;
+    color: #ffffff;
+    font-weight: 500;
+    padding: 1rem 1.25rem;
+}
+
+.card-body {
+    color: #e0e0e0;
+    padding: 1.25rem;
+}
+
+/* ======== 按钮基础样式 ======== */
+.btn-primary {
+    background-color: #3a3a3a;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    transition: all 0.2s;
+}
+
+.btn-primary:hover {
+    background-color: #4a4a4a;
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+}
+
+/* ======== 记一笔方框按钮 ======== */
+.add-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    width: 100%;
+    min-height: 44px;
+    color: #d0d0d0;
+    background-color: #2a2a2a;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    margin: 12px 0;
+    padding: 0;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+}
+
+.add-button:hover {
+    background-color: #323232;
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-1px);
+}
+
+.add-icon {
+    font-size: 22px;
+    line-height: 1;
+    display: block;
+    margin: 0;
+    padding: 0;
+    color: #ffffff;
+    opacity: 0.9;
+}
+
+.add-text {
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.3px;
+    margin-top: 2px;
+    display: block;
+    color: #a0a0a0;
+}
+
+.add-button:hover .add-icon,
+.add-button:hover .add-text {
+    opacity: 1;
+    color: #ffffff;
+}
+
+/* 强制所有链接颜色 */
+.nav-link,
+.nav-link:link,
+.nav-link:visited {
+    color: #b0b0b0 !important;  /* 浅灰色 */
+}
+
+.nav-link:hover {
+    color: #ffffff !important;
+    background-color: #2a2a2a;
+}
+
+.nav-link.active {
+    color: #ffffff !important;
+    background-color: #3a3a3a;
+}
+
+/* ======== 导航栏选中状态 ======== */
+.nav-link.active {
+    background-color: #3a3a3a !important;
+    color: #ffffff !important;
+}
+
+/* 统计按钮选中状态（包括统计本身和子页面时） */
+.nav-link[href="#"].active,
+.nav-link[onclick*="toggleStatsSubmenu"].active {
+    background-color: #3a3a3a !important;
+    color: #ffffff !important;
+}
+
+/* 子菜单选中状态 */
+#statsSubmenu .nav-link.active {
+    background-color: #3a3a3a !important;
+    color: #ffffff !important;
+}
+
+/* 子菜单悬停效果 */
+#statsSubmenu .nav-link:hover {
+    background-color: #2a2a2a !important;
+    color: #ffffff !important;
+}
+
+/* 翻页按钮 */
+.btn-outline-secondary {
+    border-color: #404040;
+    color: #e0e0e0;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.btn-outline-secondary:hover {
+    background-color: #3a3a3a;
+    border-color: #666666;
+    color: #ffffff;
+    transform: scale(1.05);
+}
+
+.btn-outline-secondary i {
+    font-size: 1.2rem;
+}
+
+/* ======== 手机版适配 ======== */
+@media (max-width: 768px) {
+    .sidebar {
+        min-height: auto;
+        border-right: none;
+        border-bottom: 1px solid #333333;
+    }
+
+    .content-area {
+        padding: 1rem;
+    }
+
+    .content-area h2 {
+        font-size: 1.5rem;
+    }
+}
+

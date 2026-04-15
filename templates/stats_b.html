@@ -1,0 +1,1095 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- 页面内容 -->
+
+<!-- 顶部控制区 -->
+<div class="top-controls">
+    <div class="time-range-selector">
+        <button class="time-range-btn active">最近30次</button>
+    </div>
+    
+    <!-- 日历选择器 -->
+    <div class="calendar-container">
+        <div class="calendar-button" id="calendarButton">
+            <span id="currentDate">2026/04 🗒︎</span>
+        </div>
+        
+        <!-- 日历抽屉 -->
+        <div class="calendar-drawer" id="calendarDrawer">
+            <div class="calendar-header">
+                <h4>选择月份</h4>
+                <button class="close-button" id="closeCalendar">×</button>
+            </div>
+            <div class="calendar-content">
+                <div class="year-selector">
+                    <h5>年份</h5>
+                    <div class="year-list" id="yearList"></div>
+                </div>
+                <div class="month-selector">
+                    <h5>月份</h5>
+                    <div class="month-list" id="monthList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 每日支出额度设置 -->
+    <div class="daily-limit-container">
+        <span class="daily-limit-label">每日支出额度为:</span>
+        <div class="daily-limit-input-wrapper">
+            <input type="text" id="dailyLimitInput" class="daily-limit-input" placeholder="">
+            <button class="daily-limit-confirm" id="dailyLimitConfirm">✓</button>
+        </div>
+    </div>
+</div>
+
+<!-- 白色边框容器 -->
+<div style="position: absolute; bottom: 50px; left: calc(17% - 2px); right: -10px; height: 60%; background-color: transparent; z-index: 0;">
+    <!-- 白框中间的浅灰色平行线（固定不动） -->
+    <div id="centerLine" class="center-line" style="position: absolute; top: 50%; left: 50px; right: -10px; height: 2px; background: linear-gradient(90deg, #a0a0a0 0%, #a0a0a0 calc(100% - 20px), transparent 100%); width: 0; z-index: 10; pointer-events: none;"></div>
+    
+    <!-- 动态横轴（与 centerLine 同一位置，但会从左向右延伸） -->
+    <div id="axisLine" class="axis-line" style="position: absolute; top: 50%; left: -10px; right: -10px; height: 2px; background: linear-gradient(90deg, transparent 0%, #e0e0e0 20px, #e0e0e0 calc(100% - 20px), transparent 100%); width: 0; z-index: 20; pointer-events: none;"></div>
+</div>
+
+<!-- 支出柱状图容器 -->
+<div id="expenseChartContainer" style="position: absolute; bottom: calc(50px + 30%); left: calc(17% - 2px); right: -10px; height: 60%; z-index: 2;">
+</div>
+
+<!-- 收入柱状图容器 -->
+<div id="incomeChartContainer" style="position: absolute; bottom: calc(50px - 30% - 2px); left: calc(17% - 2px); right: -10px; height: 60%; z-index: 2;">
+</div>
+
+<!-- 日期容器 -->
+<div id="dateContainer" style="position: absolute; bottom: calc(50px + 60%); left: calc(17% - 2px); right: -10px; height: 10%; z-index: 0; display: flex; align-items: flex-start; padding: 0 20px;">
+</div>
+
+
+
+<!-- 底部小箭头 -->
+<div style="position: fixed; bottom: 20px; left: 17%; right: 0; display: flex; justify-content: space-between; padding: 0 20px;">
+    <a href="/stats/a" style="color: #b0b0b0; text-decoration: none; font-size: 10px;">
+        <i class="fas fa-chevron-left"></i>
+    </a>
+    <span style="color: #666666; font-size: 0.8rem;"> · ● </span>
+    <a href="/stats/a" style="color: #b0b0b0; text-decoration: none; font-size: 10px;">
+        <i class="fas fa-chevron-right"></i>
+    </a>
+</div>
+
+<!-- 提示框 -->
+<div id="tooltip" style="position: fixed; display: none; background: rgba(0,0,0,0.8); color: white; padding: 4px 8px; border-radius: 3px; font-size: 10px; z-index: 1000; pointer-events: none;"></div>
+
+<style>
+html, body {
+    height: 100%;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+}
+
+.stats-b-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 20px;
+    gap: 20px;
+    overflow: hidden;
+}
+
+/* 顶部控制区 - 与 _a 保持一致 */
+.top-controls {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 20px;
+    margin-top: 10px;
+    margin-left: 3px;
+    flex-shrink: 0;
+}
+
+.time-range-selector {
+    display: flex;
+    gap: 10px;
+}
+
+.time-range-btn {
+    background-color: #3a3a3c;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    color: #e0e0e0;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.time-range-btn.active {
+    background-color: #4a4a4c;
+    font-weight: 500;
+}
+
+.time-range-btn:hover {
+    background-color: #4a4a4c;
+}
+
+/* 日历选择器 - 与 _a 保持一致 */
+.calendar-container {
+    position: relative;
+    margin-left: 0;
+}
+
+.calendar-button {
+    background-color: rgba(58, 58, 60, 0.6);
+    border: none;
+    border-radius: 8px;
+    padding: 4px 10px;
+    color: #e0e0e0;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.calendar-button:hover {
+    background-color: rgba(74, 74, 76, 0.8);
+}
+
+.calendar-drawer {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 300px;
+    background-color: #2c2c2e;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    margin-top: 8px;
+    display: none;
+}
+
+.calendar-drawer.show {
+    display: block;
+}
+
+/* 每日支出额度设置 */
+.daily-limit-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.daily-limit-label {
+    color: #e0e0e0;
+    font-size: 0.8rem;
+}
+
+.daily-limit-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.daily-limit-input {
+    background-color: #3a3a3c;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 36px 6px 12px;
+    color: #e0e0e0;
+    font-size: 0.8rem;
+    width: 140px;
+    outline: none;
+}
+
+.daily-limit-input::placeholder {
+    color: #808080;
+}
+
+.daily-limit-confirm {
+    position: absolute;
+    right: 4px;
+    background: none;
+    border: none;
+    color: #b0b0b0;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.daily-limit-confirm:hover {
+    background-color: hsl(0, 0%, 10%);
+}
+
+/* 每日额度虚线 */
+.daily-limit-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    border-top: 2px dashed hsl(0, 100%, 60%);
+    border-top: 2px dashed rgba(255, 255, 255, 0.6);
+    z-index: 0;
+    pointer-events: none;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid #3a3a3c;
+}
+
+.calendar-header h4 {
+    color: #ffffff;
+    margin: 0;
+    font-size: 1rem;
+}
+
+.close-button {
+    background: none;
+    border: none;
+    color: #b0b0b0;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close-button:hover {
+    color: #ffffff;
+}
+
+.calendar-content {
+    display: flex;
+    padding: 15px;
+}
+
+.year-selector,
+.month-selector {
+    flex: 1;
+    margin: 0 10px;
+}
+
+.year-selector h5,
+.month-selector h5 {
+    color: #b0b0b0;
+    margin: 0 0 10px 0;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+}
+
+.year-list,
+.month-list {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.year-item,
+.month-item {
+    padding: 8px 12px;
+    color: #e0e0e0;
+    cursor: pointer;
+    border-radius: 4px;
+    margin-bottom: 4px;
+    transition: background-color 0.3s ease;
+}
+
+.year-item:hover,
+.month-item:hover {
+    background-color: #3a3a3c;
+}
+
+.year-item.active,
+.month-item.active {
+    background-color: #4a4a4c;
+    font-weight: 500;
+}
+
+.year-item.disabled,
+.month-item.disabled {
+    color: #666666;
+    cursor: not-allowed;
+}
+
+.year-item.disabled:hover,
+.month-item.disabled:hover {
+    background-color: transparent;
+}
+
+.bar-container {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transform: translateX(-50%);
+    height: 100%;
+    width: 20px;
+}
+
+.bar-expense {
+    width: 12px;
+    background-color: hsl(0, 0%, 70%);
+    transition: all 0.2s ease;
+    cursor: pointer;
+    position: relative;
+    margin-top: auto;
+}
+
+.bar-expense:hover {
+    background-color: hsl(0, 0%, 90%);
+}
+
+.bar-income {
+    width: 12px;
+    background-color: hsl(0, 0%, 70%);
+    transition: all 0.2s ease;
+    cursor: pointer;
+    position: relative;
+    transform: rotate(180deg);
+    align-self: flex-start;
+    margin-top: 0;
+}
+
+.bar-income:hover {
+    background-color: hsl(0, 0%, 90%);
+}
+
+.max-label {
+    position: absolute;
+    font-size: 10px;
+    color: white;
+    white-space: nowrap;
+    font-weight: bold;
+}
+
+.max-expense-label {
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: 2px;
+}
+
+.date-container {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transform: translateX(-50%);
+    cursor: pointer;
+    height: 100%;
+}
+
+.date-number {
+    font-size: 10px;
+    color: hsl(0, 0%, 60%);
+    transition: all 0.2s ease;
+    margin-bottom: 2px;
+}
+
+.date-number:hover,
+.date-number.active {
+    color: hsl(0, 0%, 90%);
+}
+
+.date-ratio {
+    font-size: 8px;
+    color: hsl(0, 0%, 60%);
+    margin-top: 2px;
+}
+
+.month-label {
+    position: absolute;
+    top: 0px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 9px;
+    color: hsl(0, 0%, 60%);
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+/* 确保顶部控制区可点击 */
+.top-controls {
+    position: relative;
+    z-index: 100;
+}
+
+/* 动画初始状态 */
+.initial-hidden {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.fade-in {
+    opacity: 1 !important;
+}
+
+/* 横轴动画容器 - 动态延伸的线 */
+.axis-line {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #e0e0e0 0%, #e0e0e0 calc(100% - 20px), transparent 100%);
+    width: 0;
+    transition: width 0.02s linear;
+    z-index: 20;
+    pointer-events: none;
+}
+
+/* 白框中间的浅灰色平行线 - 静态线（也会延伸） */
+.center-line {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #808080 0%, #808080 calc(100% - 20px), transparent 100%);
+    width: 0;
+    transition: width 0.02s linear;
+    z-index: 10;
+    pointer-events: none;
+}
+
+/* 顶部控件和每日额度初始透明 */
+.top-controls,
+.daily-limit-container {
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+/* 虚线初始透明 */
+.daily-limit-line {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+</style>
+
+<script>
+// 月份英文缩写
+const monthAbbr = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+// 全局数据（只声明一次）
+let globalData = [];
+
+// 动画控制变量
+let animationComplete = false;
+let animationFrameId = null;
+
+// 每日支出额度相关
+let lastMonthSalary = 15000; // 模拟上个月用户填写的工资
+let currentDailyLimit = null; // 当前设置的每日额度
+
+// 初始化每日支出额度设置
+function initDailyLimit() {
+    const input = document.getElementById('dailyLimitInput');
+    const confirmBtn = document.getElementById('dailyLimitConfirm');
+    
+    // 设置占位符
+    const placeholderValue = (lastMonthSalary / 30).toFixed(2);
+    input.placeholder = `${lastMonthSalary}/30=${placeholderValue}`;
+    
+    // 尝试从 localStorage 加载已保存的额度
+    const savedLimit = localStorage.getItem('dailyExpenseLimit');
+    if (savedLimit) {
+        currentDailyLimit = parseFloat(savedLimit);
+        input.value = currentDailyLimit.toFixed(2);
+        renderDailyLimitLine();
+    }
+    
+    // 确认按钮点击事件
+    confirmBtn.addEventListener('click', function() {
+        const value = input.value.trim();
+        if (value && !isNaN(parseFloat(value))) {
+            currentDailyLimit = parseFloat(value);
+            localStorage.setItem('dailyExpenseLimit', currentDailyLimit);
+            renderDailyLimitLine();
+            
+            // 手动显示虚线和标签，模拟动画效果
+            setTimeout(() => {
+                const dailyLimitLine = document.querySelector('.daily-limit-line');
+                if (dailyLimitLine) dailyLimitLine.style.opacity = '1';
+                const dailyLimitLabel = document.querySelector('.daily-limit-label-inline');
+                if (dailyLimitLabel) dailyLimitLabel.style.opacity = '1';
+            }, 100);
+        }
+    });
+    
+    // 输入框按回车确认
+    input.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            confirmBtn.click();
+        }
+    });
+}
+
+// 渲染每日额度虚线
+function renderDailyLimitLine() {
+    if (currentDailyLimit === null) return;
+    
+    const container = document.getElementById('expenseChartContainer');
+    if (!container) return;
+    
+    // 移除旧的虚线和标签
+    const oldLine = container.querySelector('.daily-limit-line');
+    if (oldLine) oldLine.remove();
+    const oldLabel = container.querySelector('.daily-limit-label-inline');
+    if (oldLabel) oldLabel.remove();
+    
+    // 计算最大值
+    const maxExpense = Math.max(...globalData.map(d => d.expense));
+    const maxHeightPercent = 40;
+    
+    // 计算每日额度对应的高度百分比
+    const limitHeightPercent = (currentDailyLimit / maxExpense) * maxHeightPercent;
+    
+    // 创建虚线
+    const line = document.createElement('div');
+    line.className = 'daily-limit-line';
+    line.style.bottom = limitHeightPercent + '%';
+    line.style.left = '0';
+    line.style.right = '0';
+    line.style.opacity = '0'; // 初始透明，动画时显示
+    container.appendChild(line);
+    
+    // 创建标签 - 在 expenseChartContainer 内，贴着右边
+    const label = document.createElement('div');
+    label.className = 'daily-limit-label-inline';
+    label.textContent = currentDailyLimit.toFixed(2) + '¥';
+    label.style.position = 'absolute';
+    label.style.right = '0';
+    label.style.bottom = (limitHeightPercent + 2) + '%';
+    label.style.fontSize = '10px';
+    label.style.color = '#e0e0e0';
+    label.style.whiteSpace = 'nowrap';
+    label.style.marginRight = '15px';
+    label.style.opacity = '0'; // 初始透明，动画时显示
+    label.style.pointerEvents = 'none';
+    label.style.zIndex = '15';
+    container.appendChild(label);
+}
+
+// 记录所有柱子的位置（在所有渲染完成后调用）
+function recordBarPositions() {
+    const container = document.getElementById('expenseChartContainer');
+    if (!container) return;
+    
+    const containerRect = container.getBoundingClientRect();
+    const expenseBars = document.querySelectorAll('.bar-expense');
+    
+    window.barXPositions = [];
+    expenseBars.forEach((bar, index) => {
+        if (bar) {
+            const rect = bar.getBoundingClientRect();
+            // 记录柱子的右侧边缘位置，相对于白色边框容器
+            const whiteBorderContainer = document.querySelector('#expenseChartContainer').parentElement;
+            const whiteBorderRect = whiteBorderContainer.getBoundingClientRect();
+            window.barXPositions[index] = rect.right - whiteBorderRect.left;
+        }
+    });
+    
+    console.log('柱子右侧边缘位置:', window.barXPositions);
+}
+
+// 执行入场动画
+function playEntranceAnimation() {
+    const container = document.getElementById('expenseChartContainer');
+    if (!container) return;
+    
+    if (!window.barXPositions || window.barXPositions.length === 0) {
+        setTimeout(playEntranceAnimation, 100);
+        return;
+    }
+    
+    // 获取白色边框容器的宽度
+    const whiteBorderContainer = document.querySelector('#expenseChartContainer').parentElement;
+    const chartWidth = whiteBorderContainer.offsetWidth - 40;
+    
+    const startTime = performance.now();
+    const duration = 1500;
+    
+    const expenseBars = document.querySelectorAll('.bar-expense');
+    const incomeBars = document.querySelectorAll('.bar-income');
+    const dateContainers = document.querySelectorAll('.date-container');
+    const topControls = document.querySelector('.top-controls');
+    const dailyLimitContainer = document.querySelector('.daily-limit-container');
+    
+    expenseBars.forEach(bar => bar.style.opacity = '0');
+    incomeBars.forEach(bar => bar.style.opacity = '0');
+    dateContainers.forEach(date => date.style.opacity = '0');
+    if (topControls) topControls.style.opacity = '0';
+    if (dailyLimitContainer) dailyLimitContainer.style.opacity = '0';
+    
+    const axisLine = document.getElementById('axisLine');
+    const centerLine = document.getElementById('centerLine');
+    
+    if (axisLine) {
+        axisLine.style.width = '0';
+        axisLine.style.opacity = '1';
+    }
+    if (centerLine) {
+        centerLine.style.width = '0';
+        centerLine.style.opacity = '1';
+    }
+    
+    const barPositions = window.barXPositions;
+    
+    function animateAxis(now) {
+        const elapsed = now - startTime;
+        let progress = Math.min(elapsed / duration, 1);
+        const currentWidth = chartWidth * progress;
+        
+        if (axisLine) axisLine.style.width = currentWidth + 'px';
+        if (centerLine) centerLine.style.width = currentWidth + 'px';
+        
+        const axisEndX = currentWidth;
+        
+        for (let i = 0; i < barPositions.length; i++) {
+            if (barPositions[i] !== undefined && barPositions[i] <= axisEndX + 5) {
+                if (expenseBars[i]) expenseBars[i].style.opacity = '1';
+                if (incomeBars[i]) incomeBars[i].style.opacity = '1';
+                if (dateContainers[i]) dateContainers[i].style.opacity = '1';
+            }
+        }
+        
+        if (progress < 1) {
+            animationFrameId = requestAnimationFrame(animateAxis);
+        } else {
+            if (topControls) topControls.style.opacity = '1';
+            if (dailyLimitContainer) dailyLimitContainer.style.opacity = '1';
+            
+            const dailyLimitLine = document.querySelector('.daily-limit-line');
+            if (dailyLimitLine) dailyLimitLine.style.opacity = '1';
+            
+            const dailyLimitLabel = document.querySelector('.daily-limit-label-inline');
+            if (dailyLimitLabel) dailyLimitLabel.style.opacity = '1';
+        }
+    }
+    
+    requestAnimationFrame(animateAxis);
+}
+
+// 从 API 获取数据
+function fetchData() {
+    return fetch('/api/transactions')
+        .then(response => response.json())
+        .then(data => {
+            // 按日期组织数据
+            const dailyData = {};
+            
+            // 收集所有日期
+            const allDates = [];
+            
+            // 处理支出数据
+            data.expenses.forEach(item => {
+                const date = item.date;
+                if (!dailyData[date]) {
+                    dailyData[date] = { expense: 0, income: 0, date: new Date(date) };
+                }
+                dailyData[date].expense += item.amount;
+                allDates.push(item.date);
+            });
+            
+            // 处理收入数据
+            data.income.forEach(item => {
+                const date = item.date;
+                if (!dailyData[date]) {
+                    dailyData[date] = { expense: 0, income: 0, date: new Date(date) };
+                }
+                dailyData[date].income += item.amount;
+                allDates.push(item.date);
+            });
+            
+            // 找到最近的日期并更新日历显示
+            if (allDates.length > 0) {
+                const latestDate = allDates.sort().pop();
+                const [latestYear, latestMonth, latestDay] = latestDate.split('-');
+                // 更新日历显示
+                const currentDateSpan = document.getElementById('currentDate');
+                if (currentDateSpan) {
+                    currentDateSpan.textContent = `${latestYear}/${latestMonth} 🗒︎`;
+                }
+            }
+            
+            // 转换为数组并按日期排序
+            const sortedData = Object.values(dailyData).sort((a, b) => a.date - b.date);
+            
+            // 取最近30条记录
+            return sortedData.slice(-30);
+        })
+        .catch(error => {
+            console.error('获取数据失败:', error);
+            // 失败时返回模拟数据
+            const data = [];
+            const today = new Date();
+            for (let i = 29; i >= 0; i--) {
+                const date = new Date(today);
+                date.setDate(today.getDate() - i);
+                data.push({
+                    expense: Math.floor(Math.random() * 5000) + 500,  // 支出 500-5500
+                    income: Math.floor(Math.random() * 8000) + 1000,  // 收入 1000-9000
+                    date: date
+                });
+            }
+            return data;
+        });
+}
+
+// 渲染日期（只显示有记账的日期，月初月末显示月份）
+function renderDates() {
+    const container = document.getElementById('dateContainer');
+    if (!container) return;
+    container.innerHTML = '';
+    
+    if (!globalData.length) return;
+    
+    globalData.forEach((item, index) => {
+        // 计算位置（除去左右20px，按实际数据条数均分）
+        const position = 20 + ((container.offsetWidth - 40) * (index + 0.5) / globalData.length);
+        
+        const dateContainer = document.createElement('div');
+        dateContainer.className = 'date-container';
+        dateContainer.style.left = position + 'px';
+        // 设置初始透明度为0（动画会控制显示）
+        dateContainer.style.opacity = '0';
+        
+        // 日期数字
+        const dateNumber = document.createElement('div');
+        dateNumber.className = 'date-number';
+        dateNumber.textContent = item.date.getDate();
+        
+        // 日期比例（初始隐藏）
+        const dateRatio = document.createElement('div');
+        dateRatio.className = 'date-ratio';
+        dateRatio.style.display = 'none';
+        
+        dateContainer.appendChild(dateNumber);
+        dateContainer.appendChild(dateRatio);
+        
+        // 月份显示逻辑
+        const currentMonth = item.date.getMonth();
+        const prevItem = index > 0 ? globalData[index - 1] : null;
+        const nextItem = index < globalData.length - 1 ? globalData[index + 1] : null;
+        
+        // 情况1：当前是月份的第一条记录（月初），显示月份
+        const isFirstOfMonth = !prevItem || prevItem.date.getMonth() !== currentMonth;
+        if (isFirstOfMonth) {
+            const monthLabel = document.createElement('div');
+            monthLabel.className = 'month-label';
+            monthLabel.textContent = monthAbbr[currentMonth];
+            dateContainer.appendChild(monthLabel);
+        }
+        
+        // 情况2：当前是月份的最后一条记录（月末），且下一条记录月份不同，显示当前月份
+        const isLastOfMonth = !nextItem || nextItem.date.getMonth() !== currentMonth;
+        if (isLastOfMonth && !isFirstOfMonth) {
+            const monthLabel = document.createElement('div');
+            monthLabel.className = 'month-label';
+            monthLabel.textContent = monthAbbr[currentMonth];
+            dateContainer.appendChild(monthLabel);
+        }
+        
+        container.appendChild(dateContainer);
+    });
+}
+
+// 获取日期元素
+function getDateElement(index) {
+    const container = document.getElementById('dateContainer');
+    return container ? container.children[index] : null;
+}
+
+// 显示日期比例
+function showDateRatio(index, expense, income) {
+    const dateElement = getDateElement(index);
+    if (dateElement) {
+        const dateNumber = dateElement.querySelector('.date-number');
+        const dateRatio = dateElement.querySelector('.date-ratio');
+        
+        if (dateNumber && dateRatio) {
+            dateNumber.classList.add('active');
+            const ratio = (expense / income).toFixed(2);
+            dateRatio.textContent = `支:收=${ratio}`;
+            dateRatio.style.display = 'block';
+        }
+    }
+}
+
+// 隐藏日期比例
+function hideDateRatio(index) {
+    const dateElement = getDateElement(index);
+    if (dateElement) {
+        const dateNumber = dateElement.querySelector('.date-number');
+        const dateRatio = dateElement.querySelector('.date-ratio');
+        
+        if (dateNumber && dateRatio) {
+            dateNumber.classList.remove('active');
+            dateRatio.style.display = 'none';
+        }
+    }
+}
+
+// 显示提示框
+function showTooltip(e) {
+    const tooltip = document.getElementById('tooltip');
+    if (!tooltip) return;
+    const type = e.target.dataset.type;
+    const value = e.target.dataset.value;
+    
+    tooltip.textContent = type === 'expense' ? `支出:${value}¥` : `收入:${value}¥`;
+    tooltip.style.display = 'block';
+}
+
+function hideTooltip() {
+    const tooltip = document.getElementById('tooltip');
+    if (tooltip) tooltip.style.display = 'none';
+}
+
+function moveTooltip(e) {
+    const tooltip = document.getElementById('tooltip');
+    if (!tooltip) return;
+    
+    // 所有情况都在右边显示
+    tooltip.style.left = (e.clientX + 15) + 'px';
+    
+    tooltip.style.top = (e.clientY - 10) + 'px';
+}
+
+// 渲染支出柱状图
+function renderExpenseChart() {
+    const container = document.getElementById('expenseChartContainer');
+    if (!container) return;
+    
+    // 清空容器
+    container.innerHTML = '';
+    
+    if (!globalData.length) return;
+    
+    const maxExpense = Math.max(...globalData.map(d => d.expense));
+    const maxHeightPercent = 40;
+    
+    globalData.forEach((item, index) => {
+        const position = 20 + ((container.offsetWidth - 40) * (index + 0.5) / globalData.length);
+        
+        const barContainer = document.createElement('div');
+        barContainer.className = 'bar-container';
+        barContainer.style.left = position + 'px';
+        barContainer.style.top = '0';
+        barContainer.style.height = '100%';
+        
+        const expenseHeight = (item.expense / maxExpense) * maxHeightPercent;
+        const expenseBar = document.createElement('div');
+        expenseBar.className = 'bar-expense';
+        expenseBar.style.height = expenseHeight + '%';
+        expenseBar.dataset.type = 'expense';
+        expenseBar.dataset.value = item.expense;
+        expenseBar.dataset.index = index;
+        // 设置初始透明度为0（动画会控制显示）
+        expenseBar.style.opacity = '0';
+        
+        if (item.expense === maxExpense) {
+            const maxLabel = document.createElement('div');
+            maxLabel.className = 'max-label max-expense-label';
+            maxLabel.textContent = `max:¥${item.expense}`;
+            maxLabel.style.color = '#666666';
+            expenseBar.appendChild(maxLabel);
+        }
+        
+        expenseBar.addEventListener('mouseenter', function(e) {
+            showTooltip(e);
+            const idx = parseInt(this.dataset.index);
+            const itemData = globalData[idx];
+            showDateRatio(idx, itemData.expense, itemData.income);
+        });
+        expenseBar.addEventListener('mouseleave', function(e) {
+            hideTooltip();
+            const idx = parseInt(this.dataset.index);
+            hideDateRatio(idx);
+        });
+        expenseBar.addEventListener('mousemove', moveTooltip);
+        
+        barContainer.appendChild(expenseBar);
+        container.appendChild(barContainer);
+    });
+    
+    // 渲染每日额度虚线（初始透明）
+    renderDailyLimitLine();
+    const line = document.querySelector('.daily-limit-line');
+    if (line) line.style.opacity = '0';
+}
+
+// 渲染收入柱状图
+function renderIncomeChart() {
+    const container = document.getElementById('incomeChartContainer');
+    if (!container) return;
+    container.innerHTML = '';
+    
+    if (!globalData.length) return;
+    
+    const maxIncome = Math.max(...globalData.map(d => d.income));
+    const maxHeightPercent = 40;
+    
+    globalData.forEach((item, index) => {
+        // 收入柱子向右偏移 6px
+        const position = 20 + ((container.offsetWidth - 40) * (index + 0.5) / globalData.length) + 4;
+        
+        const barContainer = document.createElement('div');
+        barContainer.className = 'bar-container';
+        barContainer.style.left = position + 'px';
+        barContainer.style.top = '0';
+        barContainer.style.height = '100%';
+        barContainer.style.display = 'flex';
+        barContainer.style.flexDirection = 'column';
+        
+        const incomeHeight = (item.income / maxIncome) * maxHeightPercent;
+        const incomeBar = document.createElement('div');
+        incomeBar.className = 'bar-income';
+        incomeBar.style.height = incomeHeight + '%';
+        incomeBar.style.position = 'absolute';
+        incomeBar.style.top = '0';
+        incomeBar.dataset.type = 'income';
+        incomeBar.dataset.value = item.income;
+        incomeBar.dataset.index = index;
+        // 设置初始透明度为0（动画会控制显示）
+        incomeBar.style.opacity = '0';
+        
+        if (item.income === maxIncome) {
+            const maxLabel = document.createElement('div');
+            maxLabel.className = 'max-label';
+            maxLabel.textContent = `max:¥${item.income}`;
+            maxLabel.style.color = '#666666';
+            maxLabel.style.bottom = '100%';
+            maxLabel.style.left = '50%';
+            maxLabel.style.transform = 'translate(-50%, 0) rotate(180deg)';
+            maxLabel.style.marginBottom = '2px';
+            incomeBar.appendChild(maxLabel);
+        }
+        
+        incomeBar.addEventListener('mouseenter', function(e) {
+            showTooltip(e);
+            const idx = parseInt(this.dataset.index);
+            const itemData = globalData[idx];
+            showDateRatio(idx, itemData.expense, itemData.income);
+        });
+        incomeBar.addEventListener('mouseleave', function(e) {
+            hideTooltip();
+            const idx = parseInt(this.dataset.index);
+            hideDateRatio(idx);
+        });
+        incomeBar.addEventListener('mousemove', moveTooltip);
+        
+        barContainer.appendChild(incomeBar);
+        container.appendChild(barContainer);
+    });
+}
+
+// 初始化日历选择器
+function initCalendar() {
+    const calendarButton = document.getElementById('calendarButton');
+    const calendarDrawer = document.getElementById('calendarDrawer');
+    const closeCalendar = document.getElementById('closeCalendar');
+    const yearList = document.getElementById('yearList');
+    const monthList = document.getElementById('monthList');
+    const currentDateSpan = document.getElementById('currentDate');
+
+    // 模拟可用月份数据（实际使用时请替换为真实数据源）
+    const availableMonths = {
+        '2026': ['04', '03'],
+        '2025': ['12']
+    };
+
+    function generateYearList() {
+        yearList.innerHTML = '';
+        const years = Object.keys(availableMonths).sort().reverse();
+        years.forEach(year => {
+            const yearDiv = document.createElement('div');
+            yearDiv.className = `year-item ${year === '2026' ? 'active' : ''}`;
+            yearDiv.textContent = year;
+            yearDiv.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (year === '2026') return;
+                const months = availableMonths[year];
+                if (months && months.length > 0) {
+                    const firstMonth = months[0];
+                    currentDateSpan.textContent = `${year}/${firstMonth} 🗒︎`;
+                }
+                generateYearList();
+                generateMonthList();
+                calendarDrawer.classList.remove('show');
+                // TODO: 在这里添加切换年份后的数据刷新逻辑
+            });
+            yearList.appendChild(yearDiv);
+        });
+    }
+
+    function generateMonthList() {
+        monthList.innerHTML = '';
+        const selectedYear = document.querySelector('.year-item.active')?.textContent || '2026';
+        const available = availableMonths[selectedYear] || [];
+        available.forEach(month => {
+            const monthDiv = document.createElement('div');
+            monthDiv.className = `month-item ${month === '04' ? 'active' : ''}`;
+            monthDiv.textContent = `${parseInt(month)}月`;
+            monthDiv.addEventListener('click', (e) => {
+                e.stopPropagation();
+                currentDateSpan.textContent = `${selectedYear}/${month} 🗒︎`;
+                calendarDrawer.classList.remove('show');
+                // TODO: 在这里添加切换月份后的数据刷新逻辑
+            });
+            monthList.appendChild(monthDiv);
+        });
+    }
+
+    calendarButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        generateYearList();
+        generateMonthList();
+        calendarDrawer.classList.toggle('show');
+    });
+
+    closeCalendar.addEventListener('click', () => {
+        calendarDrawer.classList.remove('show');
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!calendarButton.contains(e.target) && !calendarDrawer.contains(e.target)) {
+            calendarDrawer.classList.remove('show');
+        }
+    });
+
+    generateYearList();
+    generateMonthList();
+    // 保持当前显示的日期
+}
+
+// 页面加载完成后渲染图表
+document.addEventListener('DOMContentLoaded', function() {
+    initCalendar();
+    initDailyLimit();
+    setTimeout(() => {
+        fetchData().then(data => {
+            globalData = data;
+            renderDates();
+            renderExpenseChart();
+            renderIncomeChart();
+            
+            // 等待一帧，确保 DOM 完全渲染后再记录位置
+            requestAnimationFrame(() => {
+                recordBarPositions();  // 先记录位置
+                setTimeout(() => {
+                    playEntranceAnimation();  // 再播放动画
+                }, 50);
+            });
+        });
+    }, 100);
+});
+</script>
+{% endblock %}

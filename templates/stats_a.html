@@ -1,0 +1,1237 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- 页面内容 -->
+<div class="stats-container">
+    <!-- 左侧饼图区域 -->
+    <div class="stats-left">
+        <!-- 收支切换滑块 -->
+        <div class="toggle-container">
+            <div class="toggle-switch">
+                <input type="checkbox" id="expenseIncomeToggle">
+                <label for="expenseIncomeToggle">
+                    <span class="toggle-text expense">支</span>
+                    <span class="toggle-text income">收</span>
+                </label>
+            </div>
+            
+            <!-- 日历选择器 -->
+            <div class="calendar-container">
+                <div class="calendar-button" id="calendarButton">
+                    <span id="currentDate">2026/04 🗒︎</span>
+                </div>
+                
+                <!-- 日历抽屉 -->
+                <div class="calendar-drawer" id="calendarDrawer">
+                    <div class="calendar-header">
+                        <h4>选择月份</h4>
+                        <button class="close-button" id="closeCalendar">×</button>
+                    </div>
+                    <div class="calendar-content">
+                        <div class="year-selector">
+                            <h5>年份</h5>
+                            <div class="year-list" id="yearList">
+                                <!-- 年份将通过JavaScript动态生成 -->
+                            </div>
+                        </div>
+                        <div class="month-selector">
+                            <h5>月份</h5>
+                            <div class="month-list" id="monthList">
+                                <!-- 月份将通过JavaScript动态生成 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 甜甜圈饼图 -->
+        <div class="donut-chart-container">
+            <canvas id="donutChart"></canvas>
+        </div>
+        
+        <!-- 月度花销柱状图 -->
+        <div class="bar-chart-container">
+            <canvas id="barChart"></canvas>
+        </div>
+    </div>
+    
+    <!-- 右侧类别排序区域 -->
+    <div class="stats-right">
+        <div class="category-list" id="categoryList">
+            <!-- 类别列表将通过JavaScript动态生成 -->
+        </div>
+    </div>
+</div>
+
+<!-- 底部小箭头 - 放在右侧内容区底部 -->
+<div style="position: fixed; bottom: 20px; left: 17%; right: 0; display: flex; justify-content: space-between; padding: 0 20px;">
+    <a href="/stats/b" style="color: #b0b0b0; text-decoration: none; font-size: 10px;">
+        <i class="fas fa-chevron-left"></i>
+    </a>
+    <span style="color: #666666; font-size: 0.8rem;"> ● · </span>
+    <a href="/stats/b" style="color: #b0b0b0; text-decoration: none; font-size: 10px;">
+        <i class="fas fa-chevron-right"></i>
+    </a>
+</div>
+
+<!-- 统计界面样式 -->
+<style>
+    .stats-container {
+        display: flex;
+        height: 100%;
+        padding: 20px;
+        gap: 20px;
+    }
+    
+    .stats-left {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .stats-right {
+        flex: 1;
+        background: #2c2c2e;
+        border-radius: 12px;
+        padding: 15px;
+        height: 70vh;
+        overflow-y: auto;
+        margin-top: auto;
+        margin-bottom: auto;
+    }
+    
+    /* 收支切换滑块 */
+    .toggle-container {
+        display: flex;
+        align-items: center;
+        margin-bottom: 30px;
+        margin-top: -35px;
+        align-self: flex-start;
+    }
+    
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 30px;
+    }
+    
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    
+    .toggle-switch label {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #3a3a3c;
+        transition: .4s;
+        border-radius: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+    }
+    
+    .toggle-text {
+        position: relative;
+        z-index: 2;
+        color: #b0b0b0;
+        font-size: 0.8rem;
+        transition: .4s;
+    }
+    
+    .toggle-switch label:before {
+        position: absolute;
+        content: "";
+        height: 24px;
+        width: 24px;
+        left: 3px;
+        bottom: 3px;
+        background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.4), rgba(255,255,255,0.1));
+        background-color: rgba(255,255,255,0.1);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255,255,255,0.2);
+        box-shadow: 0 2px 8px rgba(255,255,255,0.1), inset 0 1px 0 rgba(255,255,255,0.2);
+        transition: .4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border-radius: 50%;
+        z-index: 1;
+    }
+    
+    .toggle-switch label:before:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(255,255,255,0.15), inset 0 1px 0 rgba(255,255,255,0.25);
+    }
+    
+    .toggle-switch input:checked + label {
+        background-color: #3a3a3c; /* 保持颜色不变 */
+    }
+    
+    .toggle-switch input:checked + label:before {
+        transform: translateX(30px);
+    }
+    
+    .toggle-switch input:checked + label .expense {
+        color: #b0b0b0;
+    }
+    
+    .toggle-switch input:checked + label .income {
+        color: #666666;
+    }
+    
+    .toggle-switch label .expense {
+        color: #666666;
+    }
+    
+    .toggle-switch label .income {
+        color: #b0b0b0;
+    }
+    
+    /* 日历选择器 */
+    .calendar-container {
+        position: relative;
+        margin-left: 20px;
+    }
+    
+    .calendar-button {
+        background-color: rgba(58, 58, 60, 0.6); /* 增加透明度 */
+        border: none;
+        border-radius: 8px;
+        padding: 4px 10px; /* 减少上下 padding */
+        color: #e0e0e0;
+        font-size: 0.8rem; /* 减小字体大小 */
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+    
+    .calendar-button:hover {
+        background-color: rgba(74, 74, 76, 0.8); /* 增加透明度 */
+    }
+    
+    .calendar-drawer {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 300px;
+        background-color: #2c2c2e;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        z-index: 1000;
+        margin-top: 8px;
+        display: none;
+    }
+    
+    .calendar-drawer.show {
+        display: block;
+    }
+    
+    .calendar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        border-bottom: 1px solid #3a3a3c;
+    }
+    
+    .calendar-header h4 {
+        color: #ffffff;
+        margin: 0;
+        font-size: 1rem;
+    }
+    
+    .close-button {
+        background: none;
+        border: none;
+        color: #b0b0b0;
+        font-size: 1.2rem;
+        cursor: pointer;
+        padding: 0;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .close-button:hover {
+        color: #ffffff;
+    }
+    
+    .calendar-content {
+        display: flex;
+        padding: 15px;
+    }
+    
+    .year-selector,
+    .month-selector {
+        flex: 1;
+        margin: 0 10px;
+    }
+    
+    .year-selector h5,
+    .month-selector h5 {
+        color: #b0b0b0;
+        margin: 0 0 10px 0;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+    }
+    
+    .year-list,
+    .month-list {
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    
+    .year-item,
+    .month-item {
+        padding: 8px 12px;
+        color: #e0e0e0;
+        cursor: pointer;
+        border-radius: 4px;
+        margin-bottom: 4px;
+        transition: background-color 0.3s ease;
+    }
+    
+    .year-item:hover,
+    .month-item:hover {
+        background-color: #3a3a3c;
+    }
+    
+    .year-item.active,
+    .month-item.active {
+        background-color: #4a4a4c;
+        font-weight: 500;
+    }
+    
+    .year-item.disabled,
+    .month-item.disabled {
+        color: #666666;
+        cursor: not-allowed;
+    }
+    
+    .year-item.disabled:hover,
+    .month-item.disabled:hover {
+        background-color: transparent;
+    }
+    
+    /* 甜甜圈饼图容器 - 扩大尺寸以显示标签 */
+    .donut-chart-container {
+        width: 100%;
+        max-width: 600px;
+        min-width: 400px;
+        height: auto;
+        aspect-ratio: 1 / 1;
+        position: relative;
+        margin: -110px auto 0;
+        overflow: visible;  /* 关键：允许标签溢出容器 */
+    }
+
+    /* 确保 Canvas 本身不裁剪内容 */
+    .donut-chart-container canvas {
+        display: block;
+        margin: 0 auto;
+        overflow: visible;
+    }
+    
+    /* 月度花销柱状图容器 */
+    .bar-chart-container {
+        width: 100%;
+        max-width: 600px;
+        min-width: 400px;
+        height: 300px;
+        position: relative;
+        margin: -155px auto 0;
+        overflow: visible;
+    }
+    
+    .bar-chart-container canvas {
+        display: block;
+        margin: 0 auto;
+        overflow: visible;
+    }
+    
+    /* 类别列表 */
+    .category-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .category-item {
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        background: #3a3a3c;
+        border-radius: 8px;
+        transition: background 0.3s ease;
+    }
+    
+    .category-item:hover {
+        background: #4a4a4c;
+    }
+    
+    .category-color {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        margin-right: 12px;
+    }
+    
+    .category-info {
+        flex: 1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .category-name {
+        color: #ffffff;
+        font-size: 0.9rem;
+    }
+    
+    .category-amount {
+        color: #ffffff;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+    
+    .category-percentage {
+        color: #b0b0b0;
+        font-size: 0.8rem;
+        margin-left: 10px;
+    }
+</style>
+
+<!-- 统计界面JavaScript -->
+<script>
+    // 按年月存储的数据字典
+    let allData = {};
+    
+    // 当前选中的年月
+    let currentYear = '2026';
+    let currentMonth = '04';
+    
+    // 全局数据数组
+    const expenseData = [];
+    const incomeData = [];
+    
+    // 从 API 获取数据
+    function fetchData() {
+        return fetch('/api/transactions')
+            .then(response => response.json())
+            .then(data => {
+                // 按年月组织数据
+                allData = {};
+                
+                // 处理支出数据
+                data.expenses.forEach(item => {
+                    const [year, month, day] = item.date.split('-');
+                    const key = `${year}/${month}`;
+                    if (!allData[key]) {
+                        allData[key] = { expense: [], income: [] };
+                    }
+                    allData[key].expense.push({
+                        category: item.category,
+                        amount: item.amount
+                    });
+                });
+                
+                // 处理收入数据
+                data.income.forEach(item => {
+                    const [year, month, day] = item.date.split('-');
+                    const key = `${year}/${month}`;
+                    if (!allData[key]) {
+                        allData[key] = { expense: [], income: [] };
+                    }
+                    allData[key].income.push({
+                        category: item.category,
+                        amount: item.amount
+                    });
+                });
+                
+                // 找到最近的日期并更新当前年月
+                const allDates = [];
+                for (const key in allData) {
+                    const [year, month] = key.split('/');
+                    allDates.push(`${year}-${month}-01`);
+                }
+                
+                if (allDates.length > 0) {
+                    const latestDate = allDates.sort().pop();
+                    const [latestYear, latestMonth, latestDay] = latestDate.split('-');
+                    currentYear = latestYear;
+                    currentMonth = latestMonth;
+                    
+                    // 更新日历显示
+                    const currentDateSpan = document.getElementById('currentDate');
+                    if (currentDateSpan) {
+                        currentDateSpan.textContent = `${currentYear}/${currentMonth} 🗒︎`;
+                    }
+                }
+                
+                return allData;
+            })
+            .catch(error => {
+                console.error('获取数据失败:', error);
+                return {};
+            });
+    }
+    
+    // 获取当前年月对应的数据（如果没有则返回空数组）
+    function getDataByYearMonth(year, month) {
+        const key = `${year}/${month}`;
+        const data = allData[key];
+        if (data) {
+            return {
+                expense: data.expense,
+                income: data.income
+            };
+        } else {
+            return { expense: [], income: [] };
+        }
+    }
+    
+    // 刷新全局 expenseData 和 incomeData 为当前选中年月的数据
+    function updateGlobalData() {
+        const data = getDataByYearMonth(currentYear, currentMonth);
+        // 清空原有数组并填入新数据
+        expenseData.length = 0;
+        incomeData.length = 0;
+        data.expense.forEach(item => expenseData.push(item));
+        data.income.forEach(item => incomeData.push(item));
+    }
+    
+    // 刷新整个界面（饼图+列表）
+    function refreshUI() {
+        fetchData().then(() => {
+            updateGlobalData();
+            drawDonutChart();
+            drawBarChart();
+            populateCategoryList();
+            // 重新初始化日历
+            initCalendar();
+        });
+    }
+    
+    // 绘制月度花销柱状图
+    function drawBarChart() {
+        const canvas = document.getElementById('barChart');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        
+        // 关键修复：获取容器实际尺寸
+        const container = document.querySelector('.bar-chart-container');
+        if (!container) return;
+        
+        // 获取容器实际尺寸（考虑CSS样式）
+        const containerRect = container.getBoundingClientRect();
+        const width = Math.min(containerRect.width, 600);
+        const height = 300;
+        
+        // 设置canvas尺寸
+        canvas.width = width;
+        canvas.height = height;
+        canvas.style.width = width + 'px';
+        canvas.style.height = height + 'px';
+        
+        // 清空画布
+        ctx.clearRect(0, 0, width, height);
+        
+        // 从allData中提取月度数据（根据currentDataType决定是支出还是收入）
+        const monthlyData = [];
+        for (const key in allData) {
+            const [year, month] = key.split('/');
+            const dataArray = currentDataType === 'expense' ? allData[key].expense : allData[key].income;
+            const totalAmount = dataArray.reduce((sum, item) => sum + item.amount, 0);
+            monthlyData.push({
+                year,
+                month,
+                amount: totalAmount,
+                date: new Date(`${year}-${month}-01`)
+            });
+        }
+        
+        // 按日期排序，最近的在前
+        monthlyData.sort((a, b) => b.date - a.date);
+        
+        // 取最近的6个月
+        const recentData = monthlyData.slice(0, 6).reverse(); // 反转，使最近的在最右边
+        
+        // 确保有6个位置，不足的用空数据填充
+        const fullData = [];
+        const emptyMonths = 6 - recentData.length;
+        
+        // 添加空数据
+        for (let i = 0; i < emptyMonths; i++) {
+            fullData.push({ year: '', month: '', amount: 0, date: null });
+        }
+        
+        // 添加实际数据
+        fullData.push(...recentData);
+        
+        if (fullData.every(item => item.amount === 0)) {
+            // 无数据时显示提示
+            ctx.font = '14px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+            ctx.fillStyle = '#b0b0b0';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('暂无月度数据', width / 2, height / 2);
+            return;
+        }
+        
+        // 固定最大柱子高度为170px
+        const maxBarHeight = 170;
+        
+        // 绘制区域
+        const padding = { top: 50, right: 40, bottom: 50, left: 40 };
+        const chartWidth = width - padding.left - padding.right;
+        const chartHeight = height - padding.top - padding.bottom;
+        
+        // 柱子宽度和间距
+        const barWidth = chartWidth / fullData.length * 0.7;
+        const barSpacing = chartWidth / fullData.length * 0.3;
+        
+        // 计算有数据月份的平均值
+        const monthsWithData = fullData.filter(item => item.amount > 0);
+        const maxAmount = Math.max(...monthsWithData.map(d => d.amount));
+        const totalAmount = monthsWithData.reduce((sum, item) => sum + item.amount, 0);
+        const avgAmount = totalAmount / monthsWithData.length;
+        
+        // 绘制柱子
+        fullData.forEach((item, index) => {
+            const x = padding.left + index * (barWidth + barSpacing);
+            
+            if (item.amount > 0) {
+                // 计算柱子高度，最大为170px，其他按比例调整
+                const barHeight = (item.amount / maxAmount) * maxBarHeight;
+                const y = padding.top + chartHeight - barHeight;
+                
+                // 绘制柱子（使用浅灰色，饱和度70%）
+                ctx.beginPath();
+                ctx.rect(x, y, barWidth, barHeight);
+                ctx.fillStyle = `hsl(0, 0%, ${70 - (index * 5)}%)`; // 浅灰色，亮度递减
+                ctx.fill();
+                
+                // 绘制金额
+                ctx.font = '11px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+                ctx.fillStyle = '#e0e0e0';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText(`${item.amount}¥`, x + barWidth / 2, y - 5);
+            }
+            
+            // 绘制月份
+            ctx.font = '11px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+            ctx.fillStyle = '#b0b0b0';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            
+            if (item.month) {
+                ctx.fillText(`${parseInt(item.month)}月`, x + barWidth / 2, padding.top + chartHeight + 10);
+            } else {
+                ctx.fillText('xx月', x + barWidth / 2, padding.top + chartHeight + 10);
+            }
+            
+            // 绘制年份（如果有变化）
+            if (item.year && index > 0 && fullData[index].year !== fullData[index - 1].year) {
+                ctx.font = '10px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+                ctx.fillStyle = '#888888';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'top';
+                ctx.fillText(item.year, x + barWidth / 2, padding.top + chartHeight + 25);
+            } else if (item.year && index === 0) {
+                // 第一个月份总是显示年份
+                ctx.font = '10px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+                ctx.fillStyle = '#888888';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'top';
+                ctx.fillText(item.year, x + barWidth / 2, padding.top + chartHeight + 25);
+            }
+        });
+        
+        // 绘制平均值虚线
+        const avgBarHeight = (avgAmount / maxAmount) * maxBarHeight;
+        const avgLineY = padding.top + chartHeight - avgBarHeight;
+        
+        // 绘制虚线（浅灰色，细长）
+        ctx.beginPath();
+        ctx.setLineDash([3, 3]);
+        ctx.strokeStyle = 'rgba(180, 180, 180, 0.5)';
+        ctx.lineWidth = 1;
+        ctx.moveTo(padding.left, avgLineY);
+        ctx.lineTo(padding.left + chartWidth, avgLineY);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        
+        // 在虚线最左边标明金额（浅灰色，字小一点，饱和度50%）
+        ctx.font = '10px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+        ctx.fillStyle = 'rgba(180, 180, 180, 0.5)';
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(`¥${avgAmount.toFixed(0)}`, padding.left - 5, avgLineY);
+    }
+    
+    // 当前数据类型
+    let currentDataType = 'expense';
+    
+    // 初始化
+    document.addEventListener('DOMContentLoaded', function() {
+        // 从服务器获取数据
+        fetchData().then(() => {
+            // 加载数据后更新全局数据
+            updateGlobalData();
+            
+            // 绘制饼图
+            drawDonutChart();
+            
+            // 绘制柱状图
+            drawBarChart();
+            
+            // 填充类别列表
+            populateCategoryList();
+            
+            // 初始化日历选择器
+            initCalendar();
+        });
+        
+        // 收支切换事件
+        document.getElementById('expenseIncomeToggle').addEventListener('change', function() {
+            currentDataType = this.checked ? 'income' : 'expense';
+            drawDonutChart();
+            drawBarChart();
+            populateCategoryList();
+        });
+    });
+    
+    // 初始化日历选择器
+    function initCalendar() {
+        const calendarButton = document.getElementById('calendarButton');
+        const calendarDrawer = document.getElementById('calendarDrawer');
+        const closeCalendar = document.getElementById('closeCalendar');
+        const yearList = document.getElementById('yearList');
+        const monthList = document.getElementById('monthList');
+        const currentDateSpan = document.getElementById('currentDate');
+
+        // 从 allData 中提取所有可用的年份和月份
+        function getAvailableMonths() {
+            const yearsMap = new Map(); // year -> Set(months)
+            for (const key in allData) {
+                const [year, month] = key.split('/');
+                if (!yearsMap.has(year)) yearsMap.set(year, new Set());
+                yearsMap.get(year).add(month);
+            }
+            // 转换为对象 { '2026': ['04','03'], '2025': ['12'] }
+            const result = {};
+            for (const [year, monthsSet] of yearsMap.entries()) {
+                result[year] = Array.from(monthsSet).sort();
+            }
+            return result;
+        }
+
+        let availableMonths = getAvailableMonths();
+
+        // 生成年份列表（只显示有数据的年份）
+        function generateYearList() {
+            yearList.innerHTML = '';
+            const years = Object.keys(availableMonths).sort().reverse(); // 降序
+            
+            if (years.length === 0) {
+                // 无数据时显示提示
+                const noDataDiv = document.createElement('div');
+                noDataDiv.className = 'year-item disabled';
+                noDataDiv.textContent = '无相关数据';
+                noDataDiv.style.color = 'rgba(176, 176, 176, 0.4)';
+                yearList.appendChild(noDataDiv);
+            } else {
+                years.forEach(year => {
+                    const yearDiv = document.createElement('div');
+                    yearDiv.className = `year-item ${year === currentYear ? 'active' : ''}`;
+                    yearDiv.textContent = year;
+                    yearDiv.addEventListener('click', () => {
+                        if (year === currentYear) return;
+                        currentYear = year;
+                        // 自动选中该年份中第一个有数据的月份
+                        const months = availableMonths[currentYear];
+                        if (months && months.length > 0) {
+                            currentMonth = months[0];
+                        }
+                        generateYearList();
+                        generateMonthList();
+                        // 更新日历按钮显示
+                        currentDateSpan.textContent = `${currentYear}/${currentMonth} 🗒︎`;
+                        // 刷新主界面数据
+                        refreshUI();
+                        // 关闭抽屉
+                        calendarDrawer.classList.remove('show');
+                    });
+                    yearList.appendChild(yearDiv);
+                });
+            }
+        }
+
+        // 生成月份列表（只显示当前年份下有数据的月份）
+        function generateMonthList() {
+            monthList.innerHTML = '';
+            const available = availableMonths[currentYear] || [];
+            
+            if (available.length === 0) {
+                // 无数据时显示提示
+                const noDataDiv = document.createElement('div');
+                noDataDiv.className = 'month-item disabled';
+                noDataDiv.textContent = '无相关数据';
+                noDataDiv.style.color = 'rgba(176, 176, 176, 0.4)';
+                monthList.appendChild(noDataDiv);
+            } else {
+                // 直接遍历有数据的月份数组，没有数据的月份完全不生成 DOM
+                available.forEach(month => {
+                    const monthDiv = document.createElement('div');
+                    monthDiv.className = `month-item ${(month === currentMonth) ? 'active' : ''}`;
+                    monthDiv.textContent = `${parseInt(month)}月`;
+                    monthDiv.addEventListener('click', () => {
+                        currentMonth = month;
+                        generateMonthList();
+                        currentDateSpan.textContent = `${currentYear}/${currentMonth} 🗒︎`;
+                        refreshUI();
+                        calendarDrawer.classList.remove('show');
+                    });
+                    monthList.appendChild(monthDiv);
+                });
+            }
+        }
+
+        // 打开/关闭抽屉
+        calendarButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            calendarDrawer.classList.toggle('show');
+            // 每次打开时重新生成列表（确保数据最新）
+            if (calendarDrawer.classList.contains('show')) {
+                generateYearList();
+                generateMonthList();
+            }
+        });
+
+        closeCalendar.addEventListener('click', () => {
+            calendarDrawer.classList.remove('show');
+        });
+
+        // 点击外部关闭
+        document.addEventListener('click', function(e) {
+            if (!calendarButton.contains(e.target) && !calendarDrawer.contains(e.target)) {
+                calendarDrawer.classList.remove('show');
+            }
+        });
+
+        // 初始化显示
+        generateYearList();
+        generateMonthList();
+        currentDateSpan.textContent = `${currentYear}/${currentMonth} 🗒︎`;
+    }
+    
+    // 绘制甜甜圈饼图
+    function drawDonutChart() {
+        const canvas = document.getElementById('donutChart');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        
+        // 关键修复：获取容器实际尺寸
+        const container = document.querySelector('.donut-chart-container');
+        if (!container) return;
+        
+        // 获取容器实际尺寸（考虑CSS样式）
+        const containerRect = container.getBoundingClientRect();
+        const size = Math.min(containerRect.width, containerRect.height, 500); // 最大500px
+        
+        // 设置 canvas 的实际像素尺寸
+        canvas.width = size;
+        canvas.height = size;
+        canvas.style.width = size + 'px';
+        canvas.style.height = size + 'px';
+        
+        const width = canvas.width;
+        const height = canvas.height;
+        ctx.clearRect(0, 0, width, height);
+        
+        const centerX = width / 2;
+        const centerY = height / 2;
+        const outerRadius = width * 0.15;      // 外径 = 宽度的15%，进一步减小尺寸
+        const innerRadius = width * 0.075;      // 内径 = 宽度的7.5%，进一步减小尺寸
+        
+        // 获取数据
+        const data = currentDataType === 'expense' ? expenseData : incomeData;
+        
+        if (data.length === 0) {
+            // 无数据时显示灰色圆环
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, outerRadius, 0, 2 * Math.PI);
+            ctx.arc(centerX, centerY, innerRadius, 2 * Math.PI, 0, true);
+            ctx.fillStyle = 'rgba(176, 176, 176, 0.35)';
+            ctx.fill();
+            return;
+        }
+        
+        // 计算总金额
+        const total = data.reduce((sum, item) => sum + item.amount, 0);
+        
+        // 按金额排序
+        const sortedData = [...data].sort((a, b) => b.amount - a.amount);
+        
+        // 最多显示10个块
+        const limitedData = sortedData.slice(0, 9);
+        
+        // 计算其他类别的金额
+        if (sortedData.length > 9) {
+            const otherAmount = sortedData.slice(9).reduce((sum, item) => sum + item.amount, 0);
+            limitedData.push({ category: '其它类别', amount: otherAmount });
+        }
+        
+        // 计算固定角度的总度数（15度 * 剩余的块数）
+        const fixedAngleCount = Math.max(0, limitedData.length - 5);
+        const fixedAngleTotal = fixedAngleCount * (15 / 180) * Math.PI;
+        
+        // 计算前5个扇形的总可用角度
+        const availableAngle = 2 * Math.PI - fixedAngleTotal;
+        
+        // 计算前5个扇形的总金额
+        const top5Total = limitedData.slice(0, 5).reduce((sum, item) => sum + item.amount, 0);
+        
+        // 准备饼图数据
+        const chartData = [];
+        let startAngle = -Math.PI / 2; // 从上方中间开始（-90度）
+        
+        for (let i = 0; i < limitedData.length; i++) {
+            const item = limitedData[i];
+            let angle;
+            
+            if (i < 5) {
+                // 前5个按比例计算角度，基于可用角度
+                angle = (item.amount / top5Total) * availableAngle;
+            } else {
+                // 从第6个开始固定角度为15度
+                angle = (15 / 180) * Math.PI;
+            }
+            
+            // 计算亮度
+            const lightness = 70 - (i * 6);
+            
+            chartData.push({
+                category: item.category,
+                amount: item.amount,
+                percentage: (item.amount / total) * 100,
+                startAngle: startAngle,
+                endAngle: startAngle + angle,
+                color: `hsl(0, 0%, ${lightness}%)` // 淡灰色，亮度递减
+            });
+            
+            startAngle += angle;
+        }
+        
+        // 保存绘制状态
+        ctx.save();
+        
+        // 绘制动画
+        animateChart(ctx, centerX, centerY, outerRadius, innerRadius, chartData);
+        
+        ctx.restore();
+    }
+    
+    // 绘制饼图动画（从顶部开始顺时针逐渐展开）
+    function animateChart(ctx, centerX, centerY, outerRadius, innerRadius, chartData) {
+        let animationProgress = 0;
+        const animationDuration = 1000; // 动画持续时间（毫秒）
+        const startTime = Date.now();
+        
+        function animate() {
+            const elapsedTime = Date.now() - startTime;
+            animationProgress = Math.min(elapsedTime / animationDuration, 1);
+            
+            // 清空画布
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            
+            // 当前动画进度对应的结束角度（从顶部开始顺时针旋转的总弧度）
+            const totalAngle = 2 * Math.PI;
+            const currentEndAngle = -Math.PI / 2 + totalAngle * animationProgress;
+            
+            let currentStart = -Math.PI / 2; // 起始角度固定为顶部（90度）
+            
+            // 遍历所有扇形，根据进度绘制
+            for (let i = 0; i < chartData.length; i++) {
+                const item = chartData[i];
+                const sectorEnd = item.endAngle; // 扇形的原始结束角度
+                
+                // 如果当前进度结束角度小于等于当前扇形的起始角度，则后面的扇形都不显示
+                if (currentEndAngle <= currentStart) {
+                    break;
+                }
+                
+                // 计算实际要绘制的扇形结束角度（不能超过扇区本身的结束角度）
+                let drawEnd = Math.min(sectorEnd, currentEndAngle);
+                
+                // 绘制扇形（从 currentStart 到 drawEnd）
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, outerRadius, currentStart, drawEnd);
+                ctx.arc(centerX, centerY, innerRadius, drawEnd, currentStart, true);
+                ctx.closePath();
+                ctx.fillStyle = item.color;
+                ctx.fill();
+                
+                // 绘制边界线
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, outerRadius, currentStart, drawEnd);
+                ctx.lineWidth = 0.5;
+                ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+                ctx.stroke();
+                
+                // 更新起始角度为当前扇形的结束角度
+                currentStart = sectorEnd;
+            }
+            
+            // 绘制中心装饰（挖空部分）
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, innerRadius - 3, 0, 2 * Math.PI);
+            ctx.fillStyle = '#1c1c1e';
+            ctx.fill();
+            
+            if (animationProgress < 1) {
+                requestAnimationFrame(animate);
+            } else {
+                // 动画结束后，逐个显示标签
+                drawAllLabels(ctx, centerX, centerY, outerRadius, innerRadius, chartData);
+            }
+        }
+        
+        function drawAllLabels(ctx, centerX, centerY, outerRadius, innerRadius, chartData) {
+            chartData.forEach((item, index) => {
+                if (index < 10) { // 显示所有标签，包括最末尾的两个
+                    setTimeout(() => {
+                        drawLabel(ctx, centerX, centerY, outerRadius, innerRadius, item.startAngle, item.endAngle, item.category, item.percentage);
+                    }, index * 100);
+                }
+            });
+        }
+        
+        animate();
+    }
+    
+    // 绘制标签线和类别名称（确保不超出Canvas边界）
+    function drawLabel(ctx, centerX, centerY, outerRadius, innerRadius, startAngle, endAngle, category, percentage) {
+        // 计算扇形的中心点角度
+        const middleAngle = (startAngle + endAngle) / 2;
+        
+        // 计算标签线的起点（扇形外边缘）
+        const labelStartX = centerX + Math.cos(middleAngle) * (outerRadius + 5);
+        const labelStartY = centerY + Math.sin(middleAngle) * (outerRadius + 5);
+        
+        // 计算标签线的中间点（先伸出来一点）
+        const midX = centerX + Math.cos(middleAngle) * (outerRadius + 25);
+        const midY = centerY + Math.sin(middleAngle) * (outerRadius + 25);
+        
+        // 判断标签应该放在左侧还是右侧
+        const isRight = (middleAngle >= -Math.PI / 2 && middleAngle <= Math.PI / 2);
+        
+        // 计算标签终点位置（确保不超出Canvas边界）
+        const canvas = document.getElementById('donutChart');
+        const canvasWidth = canvas.width;
+        const canvasHeight = canvas.height;
+        
+        let labelEndX, labelEndY;
+        let textX, textY;
+        
+        // 延长线长度
+        const lineLength = 40;
+        
+        // 计算Y轴偏移，避免标签重合
+        const angleOffset = Math.sin(middleAngle) * 10;
+        
+        if (isRight) {
+            // 右侧：标签放在右边
+            labelEndX = midX + lineLength;
+            labelEndY = midY + angleOffset;
+            
+            // 确保标签不超出右边界
+            textX = Math.min(labelEndX + 8, canvasWidth - 10);
+            labelEndX = Math.min(labelEndX, canvasWidth - 45);
+        } else {
+            // 左侧：标签放在左边
+            labelEndX = midX - lineLength;
+            labelEndY = midY + angleOffset;
+            
+            // 确保标签不超出左边界
+            textX = Math.max(labelEndX - 8, 10);
+            labelEndX = Math.max(labelEndX, 45);
+        }
+        
+        textY = labelEndY;
+        
+        // 限制Y轴不超出上下边界
+        textY = Math.min(Math.max(textY, 25), canvasHeight - 15);
+        labelEndY = textY;
+        
+        // 绘制标签线（折线效果）
+        ctx.beginPath();
+        ctx.moveTo(labelStartX, labelStartY);
+        ctx.lineTo(midX, midY);
+        ctx.lineTo(labelEndX, labelEndY);
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = '#aaaaaa';
+        ctx.stroke();
+        
+        // 在终点绘制小圆点
+        ctx.beginPath();
+        ctx.arc(labelEndX, labelEndY, 2, 0, 2 * Math.PI);
+        ctx.fillStyle = '#cccccc';
+        ctx.fill();
+        
+        // 绘制类别名称
+        ctx.font = '11px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+        ctx.fillStyle = '#e0e0e0';
+        ctx.textAlign = isRight ? 'left' : 'right';
+        ctx.textBaseline = 'middle';
+        
+        // 显示类别名称和百分比（短格式）
+        let displayText = category;
+        if (percentage >= 5) {
+            displayText = category + ' ' + percentage.toFixed(2) + '%';
+        }
+        
+        // 限制文本长度
+        if (displayText.length > 12) {
+            displayText = displayText.substring(0, 10) + '...';
+        }
+        
+        ctx.fillText(displayText, textX, textY);
+    }
+    
+
+    
+    // 绘制无数据时的灰色圆环
+    function drawEmptyChart(ctx) {
+        const centerX = 150;
+        const centerY = 150;
+        const outerRadius = 100;
+        const innerRadius = 60;
+        
+        // 绘制灰色圆环
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, outerRadius, 0, 2 * Math.PI);
+        ctx.arc(centerX, centerY, innerRadius, 2 * Math.PI, 0, true);
+        ctx.fillStyle = 'rgba(176, 176, 176, 0.2)'; // 饱和度为20%的浅灰色
+        ctx.fill();
+    }
+    
+    // 准备饼图数据
+    function prepareChartData(data, total) {
+        // 按金额排序
+        const sortedData = [...data].sort((a, b) => b.amount - a.amount);
+        
+        // 最多显示10个块
+        const limitedData = sortedData.slice(0, 9);
+        
+        // 计算其他类别的金额
+        if (sortedData.length > 9) {
+            const otherAmount = sortedData.slice(9).reduce((sum, item) => sum + item.amount, 0);
+            limitedData.push({ category: '其它类别', amount: otherAmount });
+        }
+        
+        // 计算每个块的角度
+        const chartData = [];
+        let startAngle = -Math.PI / 2; // 从上方中间开始（-90度）
+        
+        for (let i = 0; i < limitedData.length; i++) {
+            const item = limitedData[i];
+            let angle;
+            
+            if (i < 5) {
+                // 前5个按比例计算角度
+                angle = (item.amount / total) * 2 * Math.PI;
+            } else {
+                // 从第6个开始固定角度为15度
+                angle = (15 / 180) * Math.PI;
+            }
+            
+            // 计算饱和度
+            const saturation = 100 - (i * 10); // 100%, 90%, 80%, ..., 10%
+            
+            chartData.push({
+                category: item.category,
+                amount: item.amount,
+                percentage: (item.amount / total) * 100,
+                startAngle: startAngle,
+                endAngle: startAngle + angle,
+                color: `hsl(0, 0%, ${70 - (i * 6)}%)` // 淡灰色，亮度递减
+            });
+            
+            startAngle += angle;
+        }
+        
+        return chartData;
+    }
+    
+    // 绘制饼图
+    function drawChart(ctx, chartData) {
+        const centerX = 150;
+        const centerY = 150;
+        const outerRadius = 100;
+        const innerRadius = 60;
+        
+        // 绘制每个扇形
+        chartData.forEach(item => {
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.arc(centerX, centerY, outerRadius, item.startAngle, item.endAngle);
+            ctx.arc(centerX, centerY, innerRadius, item.endAngle, item.startAngle, true);
+            ctx.closePath();
+            ctx.fillStyle = item.color;
+            ctx.fill();
+        });
+    }
+    
+    // 填充类别列表
+    function populateCategoryList() {
+        const categoryList = document.getElementById('categoryList');
+        categoryList.innerHTML = '';
+        
+        // 获取数据
+        const data = currentDataType === 'expense' ? expenseData : incomeData;
+        
+        // 按金额排序
+        const sortedData = [...data].sort((a, b) => b.amount - a.amount);
+        
+        // 计算总金额
+        const total = sortedData.reduce((sum, item) => sum + item.amount, 0);
+        
+        // 创建类别项
+        sortedData.forEach((item, index) => {
+            const categoryItem = document.createElement('div');
+            categoryItem.className = 'category-item';
+            
+            // 计算亮度
+            const lightness = 70 - (index * 6);
+            const color = `hsl(0, 0%, ${lightness}%)`;
+            
+            // 计算百分比
+            const percentage = (item.amount / total) * 100;
+            
+            categoryItem.innerHTML = `
+                <div class="category-color" style="background-color: ${color};"></div>
+                <div class="category-info">
+                    <span class="category-name">${item.category}</span>
+                    <div>
+                        <span class="category-amount">¥${item.amount.toFixed(2)}</span>
+                        <span class="category-percentage">${percentage.toFixed(1)}%</span>
+                    </div>
+                </div>
+            `;
+            
+            categoryList.appendChild(categoryItem);
+        });
+    }
+</script>
+{% endblock %}

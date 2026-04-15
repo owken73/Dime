@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>银行出单打印机</title>
+    <style>
+        /* 基础样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        
+        /* 打印机容器 */
+        .printer-container {
+            position: relative;
+            width: 80vw;
+            max-width: 800px;
+            margin-top: 50px;
+        }
+        
+        /* 打印机 */
+        .printer {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            background: #2c2c2e;
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 
+                        0 -5px 20px rgba(0, 0, 0, 0.3) inset;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* 椭圆长条 */
+        .printer-ellipse {
+            width: 80%;
+            height: 20px;
+            background: #3a3a3a;
+            border-radius: 50px;
+            position: absolute;
+            top: 40px;
+            transform: translateY(10px);
+            box-shadow: 0 -3px 8px rgba(0, 0, 0, 0.6) inset;
+        }
+        
+        /* 出纸口 */
+        .paper-out {
+            position: absolute;
+            bottom: 10px;
+            width: 70%;
+            height: 2px;
+            background: #4a4a4a;
+        }
+        
+        /* 指示灯 */
+        .indicator-lights {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .light {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4CAF50;
+            box-shadow: 0 0 10px #4CAF50;
+        }
+        
+        .light:nth-child(2) {
+            background: #FFC107;
+            box-shadow: 0 0 10px #FFC107;
+        }
+        
+        /* 白色固定长条 */
+        .fixed-white-bar {
+            position: absolute;
+            width: calc(80% - 12px);
+            top: 50px;
+            bottom: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #fef7e0;
+            border-radius: 2px;
+            z-index: 15;
+            border-bottom: 1px dashed #ccc;
+        }
+        
+        /* 白色账单条 */
+        .receipt {
+            position: absolute;
+            width: calc(80% - 12px);
+            top: 200px;
+            height: 500px;
+            background: #fef7e0;
+            border-radius: 2px;
+            left: 50%;
+            transform: translateX(-50%) translateY(0);
+            transition: transform 2s ease-in-out 0.2s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 5;
+            overflow: hidden;
+        }
+        
+        .receipt.slide {
+            transform: translateX(-50%) translateY(calc(75vh - 200px));
+        }
+        
+        /* 账单条内容 */
+        .receipt-content {
+            padding: 20px;
+            height: 100%;
+            overflow-y: auto;
+        }
+        
+        .receipt-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .receipt-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px dashed #e0e0e0;
+        }
+        
+        .receipt-item:last-child {
+            border-bottom: none;
+            font-weight: bold;
+        }
+        
+        /* 按钮容器 */
+        .buttons-container {
+            margin-top: 20px;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+        
+        /* 按钮样式 */
+        .btn {
+            padding: 8px 32px;
+            border: none;
+            border-radius: 60px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: rgba(200, 200, 210, 0.3);
+            color: #333333;
+            backdrop-filter: blur(8px);
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+            background: rgba(200, 200, 210, 0.4);
+        }
+        
+        /* 撕开动画 */
+        @keyframes tear {
+            0% {
+                transform: translateX(-50%) translateY(calc(75vh - 200px)) rotate(0deg) scale(1);
+                opacity: 1;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            }
+            25% {
+                transform: translateX(-50%) translateY(calc(75vh - 200px + 10px)) rotate(5deg) scale(0.98);
+                opacity: 0.9;
+                box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3), 0 0 25px rgba(0, 0, 0, 0.2) inset;
+            }
+            50% {
+                transform: translateX(-50%) translateY(calc(75vh - 200px + 20px)) rotate(10deg) scale(0.95);
+                opacity: 0.8;
+                box-shadow: 0 15px 25px rgba(0, 0, 0, 0.4), 0 0 30px rgba(0, 0, 0, 0.3) inset;
+            }
+            75% {
+                transform: translateX(-50%) translateY(calc(75vh - 200px + 30px)) rotate(15deg) scale(0.9);
+                opacity: 0.6;
+                box-shadow: 0 20px 30px rgba(0, 0, 0, 0.5), 0 0 35px rgba(0, 0, 0, 0.4) inset;
+            }
+            100% {
+                transform: translateX(-50%) translateY(calc(75vh - 200px + 40px)) rotate(20deg) scale(0.8);
+                opacity: 0;
+                box-shadow: 0 25px 35px rgba(0, 0, 0, 0.6), 0 0 40px rgba(0, 0, 0, 0.5) inset;
+            }
+        }
+        
+        .receipt.tear {
+            animation: tear 1s ease-out forwards;
+        }
+        
+        /* 收回动画 */
+        @keyframes retract {
+            0% {
+                transform: translateX(-50%) translateY(calc(75vh - 200px));
+            }
+            60% {
+                transform: translateX(-50%) translateY(-10px);
+            }
+            80% {
+                transform: translateX(-50%) translateY(5px);
+            }
+            90% {
+                transform: translateX(-50%) translateY(-2px);
+            }
+            100% {
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+        
+        .receipt.retract {
+            animation: retract 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .printer-container {
+                width: 90vw;
+            }
+            
+            .printer {
+                height: 150px;
+            }
+            
+            .printer-ellipse {
+                top: 30px;
+            }
+            
+            .fixed-white-bar {
+                top: 40px;
+                bottom: -40px;
+            }
+            
+            .receipt {
+                top: 150px;
+                height: 400px;
+            }
+            
+            .receipt.slide {
+                transform: translateX(-50%) translateY(calc(70vh - 150px));
+            }
+            
+            @keyframes tear {
+                0% {
+                    transform: translateX(-50%) translateY(calc(70vh - 150px)) rotate(0deg) scale(1);
+                }
+                25% {
+                    transform: translateX(-50%) translateY(calc(70vh - 150px + 10px)) rotate(5deg) scale(0.98);
+                }
+                50% {
+                    transform: translateX(-50%) translateY(calc(70vh - 150px + 20px)) rotate(10deg) scale(0.95);
+                }
+                75% {
+                    transform: translateX(-50%) translateY(calc(70vh - 150px + 30px)) rotate(15deg) scale(0.9);
+                }
+                100% {
+                    transform: translateX(-50%) translateY(calc(70vh - 150px + 40px)) rotate(20deg) scale(0.8);
+                }
+            }
+            
+            @keyframes retract {
+                0% {
+                    transform: translateX(-50%) translateY(calc(70vh - 150px));
+                }
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="printer-container">
+        <!-- 打印机 -->
+        <div class="printer">
+            <!-- 椭圆长条 -->
+            <div class="printer-ellipse"></div>
+            <!-- 出纸口 -->
+            <div class="paper-out"></div>
+            <!-- 指示灯 -->
+            <div class="indicator-lights">
+                <div class="light"></div>
+                <div class="light"></div>
+            </div>
+        </div>
+        
+        <!-- 白色固定长条 -->
+        <div class="fixed-white-bar"></div>
+        
+        <!-- 白色账单条 -->
+        <div class="receipt" id="receipt">
+            <div class="receipt-content">
+                <div class="receipt-header">
+                    <h3>消费明细</h3>
+                </div>
+                <div class="receipt-item">
+                    <span>星巴克</span>
+                    <span>¥32.00</span>
+                </div>
+                <div class="receipt-item">
+                    <span>盒马鲜生</span>
+                    <span>¥89.00</span>
+                </div>
+                <div class="receipt-item">
+                    <span>滴滴出行</span>
+                    <span>¥15.00</span>
+                </div>
+                <div class="receipt-item">
+                    <span>全家便利店</span>
+                    <span>¥23.50</span>
+                </div>
+                <div class="receipt-item">
+                    <span>总计</span>
+                    <span>¥159.50</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 按钮容器 -->
+    <div class="buttons-container">
+        <button class="btn" id="cancelBtn">取消</button>
+        <button class="btn" id="confirmBtn">确定</button>
+    </div>
+    
+    <script>
+        // 页面加载后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            const receipt = document.getElementById('receipt');
+            const cancelBtn = document.getElementById('cancelBtn');
+            const confirmBtn = document.getElementById('confirmBtn');
+            
+            // 延迟0.2秒后开始滑出动画
+            setTimeout(() => {
+                receipt.classList.add('slide');
+            }, 200);
+            
+            // 确定按钮点击事件
+            confirmBtn.addEventListener('click', function() {
+                receipt.classList.remove('slide');
+                receipt.classList.add('tear');
+                
+                // 动画结束后重置
+                setTimeout(() => {
+                    receipt.classList.remove('tear');
+                    receipt.style.transform = 'translateX(-50%) translateY(0)';
+                }, 1000);
+            });
+            
+            // 取消按钮点击事件
+            cancelBtn.addEventListener('click', function() {
+                receipt.classList.remove('slide');
+                receipt.classList.add('retract');
+                
+                // 动画结束后重置
+                setTimeout(() => {
+                    receipt.classList.remove('retract');
+                    receipt.style.transform = 'translateX(-50%) translateY(0)';
+                }, 1000);
+            });
+        });
+    </script>
+</body>
+</html>

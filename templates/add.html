@@ -1,0 +1,2052 @@
+<!-- templates/add.html -->
+
+<!-- 顶部按钮组 -->
+<div class="add-type-tabs">
+    <button type="button" class="type-tab active" data-type="expense" onclick="switchType('expense', event)">支出
+    </button>
+    <button type="button" class="type-tab" data-type="income" onclick="switchType('income', event)">收入</button>
+    <button type="button" class="type-tab" data-type="transfer" onclick="switchType('transfer', event)">转账</button>
+    <button type="button" class="type-tab" data-type="balance" onclick="switchType('balance', event)">余额</button>
+    <button type="button" class="type-tab" data-type="refund" onclick="switchType('refund', event)">退款</button>
+</div>
+
+<!-- 支出表单 -->
+<div id="expenseForm" class="type-form">
+    <div class="add-form">
+        <form class="dynamic-form" data-type="expense">
+            <!-- 金额 -->
+            <div class="form-group">
+                <label>金额</label>
+                <div style="position: relative;">
+                    <input type="number" class="form-control amount-input" name="amount" step="0.01" placeholder="0.00"
+                           required style="padding-right: 45px;">
+                    <button type="button" class="calc-icon-btn" onclick="toggleCalculator(this)">🖩</button>
+                </div>
+                <!-- 计算器覆盖层 -->
+                <div class="calculator-overlay" style="display: none;">
+                    <div class="calculator">
+                        <div class="calculator-display">
+                            <input type="text" class="form-control calc-display" readonly value="0">
+                        </div>
+                        <div class="calculator-buttons">
+                            <div class="calc-row">
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '7')">7</button>
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '8')">8</button>
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '9')">9</button>
+                                <button type="button" class="calc-btn calc-operator" onclick="appendToCalc(this, '+')">
+                                    +
+                                </button>
+                            </div>
+                            <div class="calc-row">
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '4')">4</button>
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '5')">5</button>
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '6')">6</button>
+                                <button type="button" class="calc-btn calc-operator" onclick="appendToCalc(this, '-')">
+                                    -
+                                </button>
+                            </div>
+                            <div class="calc-row">
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '1')">1</button>
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '2')">2</button>
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '3')">3</button>
+                                <button type="button" class="calc-btn calc-operator" onclick="appendToCalc(this, '*')">
+                                    ×
+                                </button>
+                            </div>
+                            <div class="calc-row">
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '0')">0</button>
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '00')">00</button>
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '.')">.</button>
+                                <button type="button" class="calc-btn calc-operator" onclick="appendToCalc(this, '/')">
+                                    ÷
+                                </button>
+                            </div>
+                            <div class="calc-row">
+                                <button type="button" class="calc-btn calc-clear" onclick="clearCalc(this)">C</button>
+                                <button type="button" class="calc-btn calc-delete" onclick="deleteCalc(this)">⌫</button>
+                                <button type="button" class="calc-btn calc-equals" onclick="calculateResult(this)">=
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 支出分类 -->
+            <div class="form-group">
+                <label>支出分类</label>
+                <div class="category-split-container" style="position: relative;">
+                    <!-- 左：类别 -->
+                    <div class="category-selector-wrapper">
+                        <div class="category-selector left-category" onclick="toggleCategoryDropdown('expense', event)">
+                            <span class="category-display" id="expenseMainCategoryDisplay">选择类别</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <!-- 类别下拉菜单 -->
+                        <div id="expenseMainCategoryDropdown" class="category-dropdown" style="display: none;"></div>
+                    </div>
+                    
+                    <!-- 中：箭头 -->
+                    <div class="category-arrow">
+                        <span>>></span>
+                    </div>
+                    
+                    <!-- 右：详细 -->
+                    <div class="category-selector-wrapper disabled" id="expenseSubCategoryWrapper">
+                        <div class="category-selector right-category" onclick="toggleSubCategoryDropdown('expense', event)">
+                            <span class="category-display" id="expenseSubCategoryDisplay">选择详细</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <!-- 详细下拉菜单 -->
+                        <div id="expenseSubCategoryDropdown" class="category-dropdown" style="display: none;"></div>
+                    </div>
+                    
+
+                </div>
+                <input type="hidden" name="category" class="category-input" required>
+                <input type="hidden" name="main_category" id="expenseMainCategoryInput">
+                <input type="hidden" name="sub_category" id="expenseSubCategoryInput">
+            </div>
+
+            <!-- 付款账户 -->
+            <div class="form-group">
+                <label>付款账户</label>
+                <div class="account-selector-wrapper">
+                    <div class="account-selector" onclick="openAccountDrawer('expense', this, event)">
+                        <span class="account-display" id="expenseAccountDisplay">选择付款账户</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <!-- 付款账户独立抽屉 -->
+                    <div id="expenseAccountDrawer" class="account-drawer" style="display: none;">
+                        <div class="account-drawer-body">
+                            <div class="account-list">
+                                <div class="account-item" data-account="cash"
+                                     onclick="selectAccount('expense', 'cash', '现金', event)">
+                                    <i class="fas fa-coins"></i> 现金
+                                </div>
+                                <div class="account-item" data-account="wechat"
+                                     onclick="selectAccount('expense', 'wechat', '微信', event)">
+                                    <i class="fab fa-weixin"></i> 微信
+                                </div>
+                                <div class="account-item" data-account="alipay"
+                                     onclick="selectAccount('expense', 'alipay', '支付宝', event)">
+                                    <i class="fab fa-alipay"></i> 支付宝
+                                </div>
+                                <div class="account-item" data-account="unionpay"
+                                     onclick="selectAccount('expense', 'unionpay', '云闪付', event)">
+                                    <i class="fas fa-credit-card"></i> 云闪付
+                                </div>
+                                <div class="account-item" data-account="applepay"
+                                     onclick="selectAccount('expense', 'applepay', 'Apple Pay', event)">
+                                    <i class="fab fa-apple"></i> Apple Pay
+                                </div>
+                                <div class="account-item" data-account="bank"
+                                     onclick="selectAccount('expense', 'bank', '银行卡', event)">
+                                    <i class="fas fa-credit-card"></i> 银行卡
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <input type="hidden" name="account" id="expenseAccountInput" required>
+            </div>
+
+            <!-- 日期 -->
+            <div class="form-group">
+                <label>日期</label>
+                <input type="date" name="date" class="form-control date-input" required>
+            </div>
+
+            <!-- 备注 -->
+            <div class="form-group">
+                <label>备注</label>
+                <input type="text" name="description" class="form-control" placeholder="吃什么了？">
+            </div>
+
+            <div class="save-button-group">
+                <button type="submit" class="btn btn-save-temp">暂时保存</button>
+                <button type="button" class="btn btn-print-receipt">打印小票</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 收入表单 -->
+<div id="incomeForm" class="type-form" style="display: none;">
+    <div class="add-form">
+        <form class="dynamic-form" data-type="income">
+            <!-- 金额 -->
+            <div class="form-group">
+                <label>金额</label>
+                <div style="position: relative;">
+                    <input type="number" class="form-control amount-input" name="amount" step="0.01" placeholder="0.00"
+                           required style="padding-right: 45px;">
+                    <button type="button" class="calc-icon-btn" onclick="toggleCalculator(this)">🖩</button>
+                </div>
+                <!-- 计算器覆盖层 -->
+                <div class="calculator-overlay" style="display: none;">
+                    <div class="calculator">
+                        <div class="calculator-display">
+                            <input type="text" class="form-control calc-display" readonly value="0">
+                        </div>
+                        <div class="calculator-buttons">
+                            <div class="calc-row">
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '7')">7</button>
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '8')">8</button>
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '9')">9</button>
+                                <button type="button" class="calc-btn calc-operator" onclick="appendToCalc(this, '+')">
+                                    +
+                                </button>
+                            </div>
+                            <div class="calc-row">
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '4')">4</button>
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '5')">5</button>
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '6')">6</button>
+                                <button type="button" class="calc-btn calc-operator" onclick="appendToCalc(this, '-')">
+                                    -
+                                </button>
+                            </div>
+                            <div class="calc-row">
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '1')">1</button>
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '2')">2</button>
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '3')">3</button>
+                                <button type="button" class="calc-btn calc-operator" onclick="appendToCalc(this, '*')">
+                                    ×
+                                </button>
+                            </div>
+                            <div class="calc-row">
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '0')">0</button>
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '00')">00</button>
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '.')">.</button>
+                                <button type="button" class="calc-btn calc-operator" onclick="appendToCalc(this, '/')">
+                                    ÷
+                                </button>
+                            </div>
+                            <div class="calc-row">
+                                <button type="button" class="calc-btn calc-clear" onclick="clearCalc(this)">C</button>
+                                <button type="button" class="calc-btn calc-delete" onclick="deleteCalc(this)">⌫</button>
+                                <button type="button" class="calc-btn calc-equals" onclick="calculateResult(this)">=
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 收入分类 -->
+            <div class="form-group">
+                <label>收入分类</label>
+                <div class="category-split-container" style="position: relative;">
+                    <!-- 左：类别 -->
+                    <div class="category-selector-wrapper">
+                        <div class="category-selector left-category" onclick="toggleCategoryDropdown('income', event)">
+                            <span class="category-display" id="incomeMainCategoryDisplay">选择类别</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <!-- 类别下拉菜单 -->
+                        <div id="incomeMainCategoryDropdown" class="category-dropdown" style="display: none;"></div>
+                    </div>
+                    
+                    <!-- 中：箭头 -->
+                    <div class="category-arrow">
+                        <span>>></span>
+                    </div>
+                    
+                    <!-- 右：详细 -->
+                    <div class="category-selector-wrapper disabled" id="incomeSubCategoryWrapper">
+                        <div class="category-selector right-category" onclick="toggleSubCategoryDropdown('income', event)">
+                            <span class="category-display" id="incomeSubCategoryDisplay">选择详细</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <!-- 详细下拉菜单 -->
+                        <div id="incomeSubCategoryDropdown" class="category-dropdown" style="display: none;"></div>
+                    </div>
+                    
+
+                </div>
+                <input type="hidden" name="category" class="category-input" required>
+                <input type="hidden" name="main_category" id="incomeMainCategoryInput">
+                <input type="hidden" name="sub_category" id="incomeSubCategoryInput">
+            </div>
+
+            <!-- 收款账户 -->
+            <div class="form-group">
+                <label>收款账户</label>
+                <div class="account-selector-wrapper">
+                    <div class="account-selector" onclick="openAccountDrawer('income', this, event)">
+                        <span class="account-display" id="incomeAccountDisplay">选择收款账户</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <!-- 收款账户独立抽屉 -->
+                    <div id="incomeAccountDrawer" class="account-drawer" style="display: none;">
+                        <div class="account-drawer-body">
+                            <div class="account-list">
+                                <div class="account-item" data-account="cash"
+                                     onclick="selectAccount('income', 'cash', '现金', event)">
+                                    <i class="fas fa-coins"></i> 现金
+                                </div>
+                                <div class="account-item" data-account="wechat"
+                                     onclick="selectAccount('income', 'wechat', '微信', event)">
+                                    <i class="fab fa-weixin"></i> 微信
+                                </div>
+                                <div class="account-item" data-account="alipay"
+                                     onclick="selectAccount('income', 'alipay', '支付宝', event)">
+                                    <i class="fab fa-alipay"></i> 支付宝
+                                </div>
+                                <div class="account-item" data-account="unionpay"
+                                     onclick="selectAccount('income', 'unionpay', '云闪付', event)">
+                                    <i class="fas fa-credit-card"></i> 云闪付
+                                </div>
+                                <div class="account-item" data-account="applepay"
+                                     onclick="selectAccount('income', 'applepay', 'Apple Pay', event)">
+                                    <i class="fab fa-apple"></i> Apple Pay
+                                </div>
+                                <div class="account-item" data-account="bank"
+                                     onclick="selectAccount('income', 'bank', '银行卡', event)">
+                                    <i class="fas fa-credit-card"></i> 银行卡
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <input type="hidden" name="account" id="incomeAccountInput" required>
+            </div>
+
+            <!-- 日期 -->
+            <div class="form-group">
+                <label>日期</label>
+                <input type="date" name="date" class="form-control date-input" required>
+            </div>
+
+            <!-- 备注 -->
+            <div class="form-group">
+                <label>备注</label>
+                <input type="text" name="description" class="form-control" placeholder="">
+            </div>
+
+            <div class="save-button-group">
+                <button type="submit" class="btn btn-save-temp">暂时保存</button>
+                <button type="button" class="btn btn-print-receipt">打印小票</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 转账表单 -->
+<div id="transferForm" class="type-form" style="display: none;">
+    <div class="add-form">
+        <form class="dynamic-form" data-type="transfer">
+            <!-- 金额 -->
+            <div class="form-group">
+                <label>金额</label>
+                <div style="position: relative;">
+                    <input type="number" class="form-control amount-input" name="amount" step="0.01" placeholder="0.00"
+                           required style="padding-right: 45px;">
+                    <button type="button" class="calc-icon-btn" onclick="toggleCalculator(this)">🖩</button>
+                </div>
+                <!-- 计算器覆盖层 -->
+                <div class="calculator-overlay" style="display: none;">
+                    <div class="calculator">
+                        <div class="calculator-display">
+                            <input type="text" class="form-control calc-display" readonly value="0">
+                        </div>
+                        <div class="calculator-buttons">
+                            <div class="calc-row">
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '7')">7</button>
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '8')">8</button>
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '9')">9</button>
+                                <button type="button" class="calc-btn calc-operator" onclick="appendToCalc(this, '+')">
+                                    +
+                                </button>
+                            </div>
+                            <div class="calc-row">
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '4')">4</button>
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '5')">5</button>
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '6')">6</button>
+                                <button type="button" class="calc-btn calc-operator" onclick="appendToCalc(this, '-')">
+                                    -
+                                </button>
+                            </div>
+                            <div class="calc-row">
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '1')">1</button>
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '2')">2</button>
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '3')">3</button>
+                                <button type="button" class="calc-btn calc-operator" onclick="appendToCalc(this, '*')">
+                                    ×
+                                </button>
+                            </div>
+                            <div class="calc-row">
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '0')">0</button>
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '00')">00</button>
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '.')">.</button>
+                                <button type="button" class="calc-btn calc-operator" onclick="appendToCalc(this, '/')">
+                                    ÷
+                                </button>
+                            </div>
+                            <div class="calc-row">
+                                <button type="button" class="calc-btn calc-clear" onclick="clearCalc(this)">C</button>
+                                <button type="button" class="calc-btn calc-delete" onclick="deleteCalc(this)">⌫</button>
+                                <button type="button" class="calc-btn calc-equals" onclick="calculateResult(this)">=
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 转账账户 -->
+            <div class="form-group">
+                <label>转账账户</label>
+                <div class="category-split-container">
+                    <!-- 左：转出账户 -->
+                    <div class="account-selector-wrapper">
+                        <div class="account-selector left-account" onclick="openAccountDrawer('from', this, event)">
+                            <span class="account-display" id="fromAccountDisplay">选择转出账户</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <!-- 转出账户独立抽屉 -->
+                        <div id="fromAccountDrawer" class="account-drawer" style="display: none;">
+                            <div class="account-drawer-body">
+                                <div class="account-list">
+                                    <div class="account-item" data-account="cash"
+                                         onclick="selectAccount('from', 'cash', '现金', event)">
+                                        <i class="fas fa-coins"></i> 现金
+                                    </div>
+                                    <div class="account-item" data-account="wechat"
+                                         onclick="selectAccount('from', 'wechat', '微信', event)">
+                                        <i class="fab fa-weixin"></i> 微信
+                                    </div>
+                                    <div class="account-item" data-account="alipay"
+                                         onclick="selectAccount('from', 'alipay', '支付宝', event)">
+                                        <i class="fab fa-alipay"></i> 支付宝
+                                    </div>
+                                    <div class="account-item" data-account="unionpay"
+                                         onclick="selectAccount('from', 'unionpay', '云闪付', event)">
+                                        <i class="fas fa-credit-card"></i> 云闪付
+                                    </div>
+                                    <div class="account-item" data-account="applepay"
+                                         onclick="selectAccount('from', 'applepay', 'Apple Pay', event)">
+                                        <i class="fab fa-apple"></i> Apple Pay
+                                    </div>
+                                    <div class="account-item" data-account="bank"
+                                         onclick="selectAccount('from', 'bank', '银行卡', event)">
+                                        <i class="fas fa-credit-card"></i> 银行卡
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 中：箭头 -->
+                    <div class="category-arrow">
+                        <span>>></span>
+                    </div>
+                    
+                    <!-- 右：转入账户 -->
+                    <div class="account-selector-wrapper">
+                        <div class="account-selector right-account" onclick="openAccountDrawer('to', this, event)">
+                            <span class="account-display" id="toAccountDisplay">选择转入账户</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <!-- 转入账户独立抽屉 -->
+                        <div id="toAccountDrawer" class="account-drawer" style="display: none;">
+                            <div class="account-drawer-body">
+                                <div class="account-list">
+                                    <div class="account-item" data-account="cash"
+                                         onclick="selectAccount('to', 'cash', '现金', event)">
+                                        <i class="fas fa-coins"></i> 现金
+                                    </div>
+                                    <div class="account-item" data-account="wechat"
+                                         onclick="selectAccount('to', 'wechat', '微信', event)">
+                                        <i class="fab fa-weixin"></i> 微信
+                                    </div>
+                                    <div class="account-item" data-account="alipay"
+                                         onclick="selectAccount('to', 'alipay', '支付宝', event)">
+                                        <i class="fab fa-alipay"></i> 支付宝
+                                    </div>
+                                    <div class="account-item" data-account="unionpay"
+                                         onclick="selectAccount('to', 'unionpay', '云闪付', event)">
+                                        <i class="fas fa-credit-card"></i> 云闪付
+                                    </div>
+                                    <div class="account-item" data-account="applepay"
+                                         onclick="selectAccount('to', 'applepay', 'Apple Pay', event)">
+                                        <i class="fab fa-apple"></i> Apple Pay
+                                    </div>
+                                    <div class="account-item" data-account="bank"
+                                         onclick="selectAccount('to', 'bank', '银行卡', event)">
+                                        <i class="fas fa-credit-card"></i> 银行卡
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <input type="hidden" name="from_account" id="fromAccountInput" required>
+                <input type="hidden" name="to_account" id="toAccountInput" required>
+            </div>
+
+            <!-- 删除原来的转出账户和转入账户单独的选择框 -->
+            <!-- 手续费 -->
+            <div class="form-group">
+                <label>手续费</label>
+                <input type="number" name="fee" class="form-control" step="0.01" placeholder="0.00" style="height: 32px; padding: 0.4rem 0.8rem; color: #808080;">
+            </div>
+
+            <!-- 日期 -->
+            <div class="form-group">
+                <label>日期</label>
+                <input type="date" name="date" class="form-control date-input" required>
+            </div>
+
+            <!-- 备注 -->
+            <div class="form-group">
+                <label>备注</label>
+                <input type="text" name="description" class="form-control" placeholder="">
+            </div>
+
+            <div class="save-button-group">
+                <button type="submit" class="btn btn-save-temp">暂时保存</button>
+                <button type="button" class="btn btn-print-receipt">打印小票</button>
+            </div>
+        </form>
+    </div>
+</div>
+<!-- 余额表单 -->
+<div id="balanceForm" class="type-form" style="display: none;">
+    <div class="add-form">
+        <form class="dynamic-form" data-type="balance">
+            <!-- 金额 -->
+            <div class="form-group">
+                <label>当前余额</label>
+                <div style="position: relative;">
+                    <input type="number" class="form-control amount-input" name="amount" step="0.01"
+                           placeholder="0.00"
+                           required style="padding-right: 45px;">
+                    <button type="button" class="calc-icon-btn" onclick="toggleCalculator(this)">🖩</button>
+                </div>
+                <!-- 计算器覆盖层 -->
+                <div class="calculator-overlay" style="display: none;">
+                    <div class="calculator">
+                        <div class="calculator-display">
+                            <input type="text" class="form-control calc-display" readonly value="0">
+                        </div>
+                        <div class="calculator-buttons">
+                            <div class="calc-row">
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '7')">7</button>
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '8')">8</button>
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '9')">9</button>
+                                <button type="button" class="calc-btn calc-operator"
+                                        onclick="appendToCalc(this, '+')">
+                                    +
+                                </button>
+                            </div>
+                            <div class="calc-row">
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '4')">4</button>
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '5')">5</button>
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '6')">6</button>
+                                <button type="button" class="calc-btn calc-operator"
+                                        onclick="appendToCalc(this, '-')">
+                                    -
+                                </button>
+                            </div>
+                            <div class="calc-row">
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '1')">1</button>
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '2')">2</button>
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '3')">3</button>
+                                <button type="button" class="calc-btn calc-operator"
+                                        onclick="appendToCalc(this, '*')">
+                                    ×
+                                </button>
+                            </div>
+                            <div class="calc-row">
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '0')">0</button>
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '00')">00
+                                </button>
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '.')">.</button>
+                                <button type="button" class="calc-btn calc-operator"
+                                        onclick="appendToCalc(this, '/')">
+                                    ÷
+                                </button>
+                            </div>
+                            <div class="calc-row">
+                                <button type="button" class="calc-btn calc-clear" onclick="clearCalc(this)">C
+                                </button>
+                                <button type="button" class="calc-btn calc-delete" onclick="deleteCalc(this)">⌫
+                                </button>
+                                <button type="button" class="calc-btn calc-equals" onclick="calculateResult(this)">=
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 账户 -->
+            <div class="form-group">
+                <label>账户</label>
+                <div class="account-selector-wrapper">
+                    <div class="account-selector" onclick="openAccountDrawer('balance', this, event)">
+                        <span class="account-display" id="balanceAccountDisplay">选择账户</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <!-- 账户独立抽屉 -->
+                    <div id="balanceAccountDrawer" class="account-drawer" style="display: none;">
+                        <div class="account-drawer-body">
+                            <div class="account-list">
+                                <div class="account-item" data-account="cash"
+                                     onclick="selectAccount('balance', 'cash', '现金', event)">
+                                    <i class="fas fa-coins"></i> 现金
+                                </div>
+                                <div class="account-item" data-account="wechat"
+                                     onclick="selectAccount('balance', 'wechat', '微信', event)">
+                                    <i class="fab fa-weixin"></i> 微信
+                                </div>
+                                <div class="account-item" data-account="alipay"
+                                     onclick="selectAccount('balance', 'alipay', '支付宝', event)">
+                                    <i class="fab fa-alipay"></i> 支付宝
+                                </div>
+                                <div class="account-item" data-account="unionpay"
+                                     onclick="selectAccount('balance', 'unionpay', '云闪付', event)">
+                                    <i class="fas fa-credit-card"></i> 云闪付
+                                </div>
+                                <div class="account-item" data-account="applepay"
+                                     onclick="selectAccount('balance', 'applepay', 'Apple Pay', event)">
+                                    <i class="fab fa-apple"></i> Apple Pay
+                                </div>
+                                <div class="account-item" data-account="bank"
+                                     onclick="selectAccount('balance', 'bank', '银行卡', event)">
+                                    <i class="fas fa-credit-card"></i> 银行卡
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <input type="hidden" name="account" id="balanceAccountInput" required>
+            </div>
+
+            <!-- 日期 -->
+            <div class="form-group">
+                <label>记录日期</label>
+                <input type="date" name="date" class="form-control date-input" required>
+            </div>
+
+            <!-- 备注 -->
+            <div class="form-group">
+                <label>备注</label>
+                <input type="text" name="description" class="form-control" placeholder="余额调整">
+            </div>
+
+            <div class="save-button-group">
+                <button type="submit" class="btn btn-save-temp">暂时保存</button>
+                <button type="button" class="btn btn-print-receipt">打印小票</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 退款表单 -->
+<div id="refundForm" class="type-form" style="display: none;">
+    <div class="add-form">
+        <form class="dynamic-form" data-type="refund">
+            <!-- 金额 -->
+            <div class="form-group">
+                <label>退款金额</label>
+                <div style="position: relative;">
+                    <input type="number" class="form-control amount-input" name="amount" step="0.01"
+                           placeholder="0.00"
+                           required style="padding-right: 45px;">
+                    <button type="button" class="calc-icon-btn" onclick="toggleCalculator(this)">🖩</button>
+                </div>
+                <!-- 计算器覆盖层 -->
+                <div class="calculator-overlay" style="display: none;">
+                    <div class="calculator">
+                        <div class="calculator-display">
+                            <input type="text" class="form-control calc-display" readonly value="0">
+                        </div>
+                        <div class="calculator-buttons">
+                            <div class="calc-row">
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '7')">7</button>
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '8')">8</button>
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '9')">9</button>
+                                <button type="button" class="calc-btn calc-operator"
+                                        onclick="appendToCalc(this, '+')">
+                                    +
+                                </button>
+                            </div>
+                            <div class="calc-row">
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '4')">4</button>
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '5')">5</button>
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '6')">6</button>
+                                <button type="button" class="calc-btn calc-operator"
+                                        onclick="appendToCalc(this, '-')">
+                                    -
+                                </button>
+                            </div>
+                            <div class="calc-row">
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '1')">1</button>
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '2')">2</button>
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '3')">3</button>
+                                <button type="button" class="calc-btn calc-operator"
+                                        onclick="appendToCalc(this, '*')">
+                                    ×
+                                </button>
+                            </div>
+                            <div class="calc-row">
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '0')">0</button>
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '00')">00
+                                </button>
+                                <button type="button" class="calc-btn" onclick="appendToCalc(this, '.')">.</button>
+                                <button type="button" class="calc-btn calc-operator"
+                                        onclick="appendToCalc(this, '/')">
+                                    ÷
+                                </button>
+                            </div>
+                            <div class="calc-row">
+                                <button type="button" class="calc-btn calc-clear" onclick="clearCalc(this)">C
+                                </button>
+                                <button type="button" class="calc-btn calc-delete" onclick="deleteCalc(this)">⌫
+                                </button>
+                                <button type="button" class="calc-btn calc-equals" onclick="calculateResult(this)">=
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 原支出分类 -->
+            <div class="form-group">
+                <label>原支出分类</label>
+                <div class="category-split-container" style="position: relative;">
+                    <!-- 左：类别 -->
+                    <div class="category-selector-wrapper">
+                        <div class="category-selector left-category" onclick="toggleCategoryDropdown('refund', event)">
+                            <span class="category-display" id="refundMainCategoryDisplay">选择类别</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <!-- 类别下拉菜单 -->
+                        <div id="refundMainCategoryDropdown" class="category-dropdown" style="display: none;"></div>
+                    </div>
+                    
+                    <!-- 中：箭头 -->
+                    <div class="category-arrow">
+                        <span>>></span>
+                    </div>
+                    
+                    <!-- 右：详细 -->
+                    <div class="category-selector-wrapper disabled" id="refundSubCategoryWrapper">
+                        <div class="category-selector right-category" onclick="toggleSubCategoryDropdown('refund', event)">
+                            <span class="category-display" id="refundSubCategoryDisplay">选择详细</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <!-- 详细下拉菜单 -->
+                        <div id="refundSubCategoryDropdown" class="category-dropdown" style="display: none;"></div>
+                    </div>
+                    
+
+                </div>
+                <input type="hidden" name="category" class="category-input" required>
+                <input type="hidden" name="main_category" id="refundMainCategoryInput">
+                <input type="hidden" name="sub_category" id="refundSubCategoryInput">
+            </div>
+
+            <!-- 退款账户 -->
+            <div class="form-group">
+                <label>退款账户</label>
+                <div class="account-selector-wrapper">
+                    <div class="account-selector" onclick="openAccountDrawer('refund', this, event)">
+                        <span class="account-display" id="refundAccountDisplay">选择退款账户</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <!-- 退款账户独立抽屉 -->
+                    <div id="refundAccountDrawer" class="account-drawer" style="display: none;">
+                        <div class="account-drawer-body">
+                            <div class="account-list">
+                                <div class="account-item" data-account="cash"
+                                     onclick="selectAccount('refund', 'cash', '现金', event)">
+                                    <i class="fas fa-coins"></i> 现金
+                                </div>
+                                <div class="account-item" data-account="wechat"
+                                     onclick="selectAccount('refund', 'wechat', '微信', event)">
+                                    <i class="fab fa-weixin"></i> 微信
+                                </div>
+                                <div class="account-item" data-account="alipay"
+                                     onclick="selectAccount('refund', 'alipay', '支付宝', event)">
+                                    <i class="fab fa-alipay"></i> 支付宝
+                                </div>
+                                <div class="account-item" data-account="unionpay"
+                                     onclick="selectAccount('refund', 'unionpay', '云闪付', event)">
+                                    <i class="fas fa-credit-card"></i> 云闪付
+                                </div>
+                                <div class="account-item" data-account="applepay"
+                                     onclick="selectAccount('refund', 'applepay', 'Apple Pay', event)">
+                                    <i class="fab fa-apple"></i> Apple Pay
+                                </div>
+                                <div class="account-item" data-account="bank"
+                                     onclick="selectAccount('refund', 'bank', '银行卡', event)">
+                                    <i class="fas fa-credit-card"></i> 银行卡
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <input type="hidden" name="account" id="refundAccountInput" required>
+            </div>
+
+            <!-- 日期 -->
+            <div class="form-group">
+                <label>退款日期</label>
+                <input type="date" name="date" class="form-control date-input" required>
+            </div>
+
+            <!-- 备注 -->
+            <div class="form-group">
+                <label>备注</label>
+                <input type="text" name="description" class="form-control" placeholder="退款原因">
+            </div>
+
+            <div class="save-button-group">
+                <button type="submit" class="btn btn-save-temp">暂时保存</button>
+                <button type="button" class="btn btn-print-receipt">打印小票</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 分类抽屉遮罩层 -->
+<div id="drawerOverlay" class="drawer-overlay" style="display: none;"></div>
+
+<!-- 添加分类对话框 -->
+<div id="addCategoryDialog" class="add-category-dialog" style="display: none;">
+    <div class="dialog-arrow"></div>
+    <div class="dialog-content">
+        <div class="dialog-actions">
+            <button onclick="closeAddCategoryDialog()">×</button>
+            <button onclick="saveNewCategory()">✔︎</button>
+        </div>
+        <h6>添加分类</h6>
+        <div class="dialog-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>类别</label>
+                    <div class="category-selector" onclick="toggleCategoryDropdown('main')">
+                        <span class="category-display" id="mainCategoryDisplay">选择类别</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div id="mainCategoryDropdown" class="category-dropdown" style="display: none;">
+                        <div class="dropdown-items">
+                            <div class="dropdown-item" onclick="selectMainCategory('餐饮')">餐饮</div>
+                            <div class="dropdown-item" onclick="selectMainCategory('购物')">购物</div>
+                            <div class="dropdown-item" onclick="selectMainCategory('交通')">交通</div>
+                            <div class="dropdown-item" onclick="selectMainCategory('娱乐')">娱乐</div>
+                            <div class="dropdown-item" onclick="selectMainCategory('社交聚餐')">社交聚餐</div>
+                            <div class="dropdown-item" onclick="selectMainCategory('住房')">住房</div>
+                            <div class="dropdown-item" onclick="selectMainCategory('宠物')">宠物</div>
+                            <div class="dropdown-item" onclick="selectMainCategory('运动户外')">运动户外</div>
+                            <div class="dropdown-item" onclick="selectMainCategory('医疗')">医疗</div>
+                            <div class="dropdown-item" onclick="selectMainCategory('学习')">学习</div>
+                            <div class="dropdown-item" onclick="selectMainCategory('数码')">数码</div>
+                            <div class="dropdown-item" onclick="selectMainCategory('旅行')">旅行</div>
+                            <div class="dropdown-item" onclick="selectMainCategory('人情礼金')">人情礼金</div>
+                            <div class="dropdown-item" onclick="selectMainCategory('孩子')">孩子</div>
+                            <div class="dropdown-item" onclick="selectMainCategory('长辈')">长辈</div>
+                            <div class="dropdown-item" onclick="selectMainCategory('其他')">其他</div>
+                            <div class="dropdown-item custom-input">
+                                <div class="input-with-check">
+                                    <input type="text" id="customMainCategory" placeholder="自定义类别">
+                                    <button onclick="addCustomMainCategory()">✔︎</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" id="mainCategoryInput">
+                </div>
+                <div class="form-group">
+                    <label>详细</label>
+                    <div class="category-selector" onclick="toggleCategoryDropdown('sub')">
+                        <span class="category-display" id="subCategoryDisplay">选择详细</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div id="subCategoryDropdown" class="category-dropdown" style="display: none;">
+                        <div class="dropdown-items">
+                            <div class="dropdown-item custom-input">
+                                <div class="input-with-check">
+                                    <input type="text" id="customSubCategory" placeholder="自定义详细">
+                                    <button onclick="addCustomSubCategory()">✔︎</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" id="subCategoryInput">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+    let currentDrawerType = 'expense';
+    let currentDrawerId = null;
+    let currentSelectorElement = null;
+    let currentMainCategory = '';
+    
+    // 最近分类数据
+    let recentCategories = {
+        expense: [],
+        income: [],
+        refund: []
+    };
+    
+    // 从本地存储加载最近分类
+    function loadRecentCategories() {
+        const stored = localStorage.getItem('recentCategories');
+        if (stored) {
+            recentCategories = JSON.parse(stored);
+        }
+    }
+    
+    // 保存最近分类到本地存储
+    function saveRecentCategories() {
+        localStorage.setItem('recentCategories', JSON.stringify(recentCategories));
+    }
+    
+    // 更新最近分类
+    function updateRecentCategory(type, mainCategory, subCategory) {
+        if (!mainCategory || !subCategory) return;
+        
+        const categoryKey = mainCategory + ' >> ' + subCategory;
+        
+        // 从数组中移除已存在的项
+        recentCategories[type] = recentCategories[type].filter(item => item.key !== categoryKey);
+        
+        // 添加到数组开头
+        recentCategories[type].unshift({
+            key: categoryKey,
+            mainCategory: mainCategory,
+            subCategory: subCategory,
+            count: 1
+        });
+        
+        // 限制最近分类数量为10
+        recentCategories[type] = recentCategories[type].slice(0, 10);
+        
+        // 保存到本地存储
+        saveRecentCategories();
+    }
+    
+    // 加载最近分类
+    loadRecentCategories();
+    
+    // 类别数据
+    const categoryData = {
+        expense: [
+            '餐饮', '购物', '交通', '娱乐', '社交聚餐', '住房', '宠物', '运动户外', '医疗', '学习', '数码', '旅行', '人情礼金', '孩子', '长辈', '其他'
+        ],
+        income: [
+            '工资劳务', '副业兼职', '二手回血', '理财收益', '羊毛返利', '补贴报销', '人情转账'
+        ],
+        refund: [
+            '餐饮', '购物', '交通', '娱乐', '社交聚餐', '住房', '宠物', '运动户外', '医疗', '学习', '数码', '旅行', '人情礼金', '孩子', '长辈', '其他'
+        ]
+    };
+    
+    // 子类别数据
+    const subCategoryData = {
+        餐饮: ['正餐', '夜宵', '外卖', '食堂', '轻食', '咖啡', '奶茶', '果汁', '冰淇淋', '面包蛋糕', '零食', '水果', '蔬菜', '调料粮油'],
+        购物: ['服装', '鞋子', '包包', '配饰', '美妆护肤', '洗护日用', '潮玩手办', '数码配件', '鲜花绿植', '香薰蜡烛', '收纳用品'],
+        交通: ['地铁公交', '打车', '共享单车', '加油充电', '停车费', '高速费', '保养维修', '罚单'],
+        娱乐: ['电影', '演出演唱会', '剧本杀密室', '游戏充值', '游戏买断', '视频会员', '音乐会员', '直播打赏', '盲盒扭蛋', '彩票刮刮乐'],
+        社交聚餐: ['请客吃饭', '聚餐', '酒吧', '唱K', '剧本杀', '桌游', '下午茶'],
+        住房: ['房租', '房贷', '水电燃气', '宽带', '物业费', '维修', '家居用品'],
+        宠物: ['宠物粮', '宠物零食', '宠物用品', '宠物医疗', '宠物洗护', '寄养遛宠'],
+        运动户外: ['运动装备', '健身课程', '场馆门票', '露营', '滑雪', '骑行', '飞盘', '登山'],
+        医疗: ['挂号检查', '药品', '牙科', '眼科', '体检', '推拿按摩', '心理咨询', '保健品'],
+        学习: ['课程', '书籍', '资料打印', '考试报名', '自习室'],
+        数码: ['手机电脑', '耳机', '相机', '存储设备', '维修', '软件订阅', '云存储'],
+        旅行: ['机票火车票', '住宿', '景点门票', '当地交通', '签证保险'],
+        人情礼金: ['结婚红包', '生日红包', '满月红包', '随礼', '送礼'],
+        孩子: ['奶粉尿布', '玩具绘本', '兴趣班', '托管', '疫苗体检'],
+        长辈: ['孝敬钱', '给长辈买东西', '长辈医疗'],
+        其他: ['理发', '洗衣', '快递', '打印', '证件办理', '维修开锁'],
+        工资劳务: ['基本工资', '加班费', '奖金', '绩效', '全勤奖', '年终奖', '补贴（餐补/交通/通讯）'],
+        副业兼职: ['稿费', '设计费', '翻译', '剪辑', '家教', '陪诊', '遛狗喂猫', '代练陪玩', '摆摊', '带货佣金'],
+        二手回血: ['闲鱼卖货', '转转卖货', '二手书', '二手手机', '二手数码', '二手服饰包', '回收（废品/旧物）'],
+        理财收益: ['利息', '基金分红', '股票卖出', '债券', '打新中签', '黄金'],
+        羊毛返利: ['返利', '红包', '立减金', '中奖', '积分兑换', '银行活动', '退款差价'],
+        补贴报销: ['医保报销', '生育津贴', '失业金', '租房补贴', '退税', '保险理赔'],
+        人情转账: ['父母转账', '对象转账', '生日红包', '婚礼红包', '压岁钱', '拼单收款', '借出还款']
+    };
+
+    // ==================== 切换顶部按钮 ====================
+    function switchType(type, event) {
+        // 切换激活样式
+        document.querySelectorAll('.type-tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        event.currentTarget.classList.add('active');
+
+        // 隐藏所有表单
+        document.querySelectorAll('.type-form').forEach(form => {
+            form.style.display = 'none';
+        });
+
+        // 显示选中的表单，并检查是否存在
+        const targetForm = document.getElementById(type + 'Form');
+        if (targetForm) {
+            targetForm.style.display = 'block';
+            setDefaultDateForCurrentForm();
+        } else {
+            console.error(`未找到表单: ${type}Form`);
+        }
+    }
+
+    // ==================== 设置默认日期 ====================
+    function setDefaultDateForCurrentForm() {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        const todayStr = `${year}-${month}-${day}`;
+
+        document.querySelectorAll('.type-form:not([style*="display: none"]) .date-input').forEach(input => {
+            if (!input.value) {
+                input.value = todayStr;
+            }
+        });
+    }
+
+    // ==================== 计算器功能 ====================
+    function toggleCalculator(btn) {
+        const overlay = btn.closest('.form-group').querySelector('.calculator-overlay');
+        if (overlay) {
+            if (overlay.style.display === 'none' || overlay.style.display === '') {
+                overlay.style.display = 'block';
+            } else {
+                overlay.style.display = 'none';
+            }
+        }
+    }
+
+    // 点击其他地方关闭计算器
+    document.addEventListener('click', function(event) {
+        // 检查点击的目标是否在计算器内部或触发按钮上
+        const isCalculatorClick = event.target.closest('.calculator-overlay');
+        const isCalcButtonClick = event.target.closest('.calc-icon-btn');
+        
+        // 如果点击不在计算器内也不在触发按钮上，则关闭所有计算器
+        if (!isCalculatorClick && !isCalcButtonClick) {
+            document.querySelectorAll('.calculator-overlay').forEach(overlay => {
+                overlay.style.display = 'none';
+            });
+        }
+    });
+
+    function appendToCalc(btn, value) {
+        const calculator = btn.closest('.calculator');
+        const display = calculator.querySelector('.calc-display');
+        const amountInput = btn.closest('.form-group').querySelector('.amount-input');
+
+        if (display.value === '0' && value !== '.') {
+            display.value = value;
+        } else {
+            display.value += value;
+        }
+
+        amountInput.value = display.value;
+    }
+
+    function clearCalc(btn) {
+        const calculator = btn.closest('.calculator');
+        const display = calculator.querySelector('.calc-display');
+        const amountInput = btn.closest('.form-group').querySelector('.amount-input');
+        display.value = '0';
+        amountInput.value = '';
+    }
+
+    function deleteCalc(btn) {
+        const calculator = btn.closest('.calculator');
+        const display = calculator.querySelector('.calc-display');
+        const amountInput = btn.closest('.form-group').querySelector('.amount-input');
+        display.value = display.value.slice(0, -1) || '0';
+        amountInput.value = display.value;
+    }
+
+    function calculateResult(btn) {
+        const calculator = btn.closest('.calculator');
+        const display = calculator.querySelector('.calc-display');
+        const amountInput = btn.closest('.form-group').querySelector('.amount-input');
+        try {
+            let expression = display.value.replace(/×/g, '*').replace(/÷/g, '/');
+            let result = eval(expression);
+            display.value = result;
+            amountInput.value = result;
+        } catch (e) {
+            display.value = '错误';
+            setTimeout(() => {
+                display.value = '0';
+            }, 1000);
+        }
+    }
+
+// 点击其他地方关闭所有抽屉
+    document.addEventListener('click', function(event) {
+        // 检查点击的目标是否在抽屉内部或触发按钮上
+        const isFromDrawerClick = event.target.closest('#fromAccountDrawer');
+        const isToDrawerClick = event.target.closest('#toAccountDrawer');
+        const isExpenseDrawerClick = event.target.closest('#expenseAccountDrawer');
+        const isIncomeDrawerClick = event.target.closest('#incomeAccountDrawer');
+        const isBalanceDrawerClick = event.target.closest('#balanceAccountDrawer');
+        const isRefundDrawerClick = event.target.closest('#refundAccountDrawer');
+        
+        const isFromSelectorClick = event.target.closest('.left-account');
+        const isToSelectorClick = event.target.closest('.right-account');
+        const isAccountSelectorClick = event.target.closest('.account-selector');
+        const isAccountItemClick = event.target.closest('.account-item');
+
+        // 如果点击不在任何抽屉内，也不在触发按钮上，也不在账户选项上，则关闭所有抽屉
+        if (!isFromDrawerClick && !isToDrawerClick && !isExpenseDrawerClick && !isIncomeDrawerClick && !isBalanceDrawerClick && !isRefundDrawerClick && 
+            !isFromSelectorClick && !isToSelectorClick && !isAccountSelectorClick && !isAccountItemClick) {
+            const fromDrawer = document.getElementById('fromAccountDrawer');
+            const toDrawer = document.getElementById('toAccountDrawer');
+            const expenseDrawer = document.getElementById('expenseAccountDrawer');
+            const incomeDrawer = document.getElementById('incomeAccountDrawer');
+            const balanceDrawer = document.getElementById('balanceAccountDrawer');
+            const refundDrawer = document.getElementById('refundAccountDrawer');
+            
+            if (fromDrawer) fromDrawer.style.display = 'none';
+            if (toDrawer) toDrawer.style.display = 'none';
+            if (expenseDrawer) expenseDrawer.style.display = 'none';
+            if (incomeDrawer) incomeDrawer.style.display = 'none';
+            if (balanceDrawer) balanceDrawer.style.display = 'none';
+            if (refundDrawer) refundDrawer.style.display = 'none';
+            
+            currentDrawerId = null;
+            currentSelectorElement = null;
+        }
+    });
+
+    // ==================== 分类抽屉 ====================
+    function openCategoryDrawer(type, element, displayType) {
+        currentDrawerType = type;
+        currentSelectorElement = element;
+
+        // 隐藏所有大类菜单
+        document.getElementById('expenseMainCategories').style.display = 'none';
+        document.getElementById('incomeMainCategories').style.display = 'none';
+        document.getElementById('transferMainCategories').style.display = 'none';
+
+        // 显示对应的大类菜单
+        if (type === 'refund') {
+            document.getElementById('expenseMainCategories').style.display = 'block';
+        } else {
+            document.getElementById(type + 'MainCategories').style.display = 'block';
+        }
+
+        // 隐藏所有子分类
+        document.querySelectorAll('.sub-category-group').forEach(group => {
+            group.style.display = 'none';
+        });
+
+        // 根据类型和显示类型显示对应的分类
+        if (displayType === 'main') {
+            // 显示大类菜单，隐藏子分类
+            if (type === 'expense' || type === 'refund') {
+                document.getElementById('foodSub').style.display = 'grid';
+                // 激活第一个大类
+                document.querySelectorAll('#expenseMainCategories .main-category').forEach(cat => {
+                    cat.classList.remove('active');
+                });
+                document.querySelector('#expenseMainCategories .main-category[data-main="food"]').classList.add('active');
+            } else if (type === 'income') {
+                document.getElementById('salarySub').style.display = 'grid';
+                document.querySelectorAll('#incomeMainCategories .main-category').forEach(cat => {
+                    cat.classList.remove('active');
+                });
+                document.querySelector('#incomeMainCategories .main-category[data-main="salary"]').classList.add('active');
+            }
+        } else if (displayType === 'sub') {
+            // 显示当前类别下的子分类
+            const mainInput = document.getElementById(type + 'MainCategoryInput');
+            const mainCategory = mainInput ? mainInput.value : '';
+            
+            if (mainCategory) {
+                // 根据主类别显示对应的子分类
+                if (type === 'expense' || type === 'refund') {
+                    if (mainCategory.includes('饮食')) {
+                        document.getElementById('foodSub').style.display = 'grid';
+                    } else if (mainCategory.includes('出行')) {
+                        document.getElementById('transportSub').style.display = 'grid';
+                    } else if (mainCategory.includes('日用')) {
+                        document.getElementById('shoppingSub').style.display = 'grid';
+                    } else if (mainCategory.includes('住房')) {
+                        document.getElementById('housingSub').style.display = 'grid';
+                    } else if (mainCategory.includes('娱乐')) {
+                        document.getElementById('entertainmentSub').style.display = 'grid';
+                    } else if (mainCategory.includes('医疗')) {
+                        document.getElementById('medicalSub').style.display = 'grid';
+                    } else if (mainCategory.includes('教育')) {
+                        document.getElementById('educationSub').style.display = 'grid';
+                    }
+                } else if (type === 'income') {
+                    if (mainCategory.includes('工资')) {
+                        document.getElementById('salarySub').style.display = 'grid';
+                    } else if (mainCategory.includes('兼职')) {
+                        document.getElementById('parttimeSub').style.display = 'grid';
+                    } else if (mainCategory.includes('理财')) {
+                        document.getElementById('investmentSub').style.display = 'grid';
+                    } else if (mainCategory.includes('奖金')) {
+                        document.getElementById('salarySub').style.display = 'grid';
+                    } else if (mainCategory.includes('退款')) {
+                        document.getElementById('salarySub').style.display = 'grid';
+                    }
+                }
+            } else {
+                // 如果没有选择主类别，显示默认子分类
+                if (type === 'expense' || type === 'refund') {
+                    document.getElementById('foodSub').style.display = 'grid';
+                } else if (type === 'income') {
+                    document.getElementById('salarySub').style.display = 'grid';
+                }
+            }
+        }
+
+        // 定位抽屉到当前点击的元素下方
+        const drawer = document.getElementById('categoryDrawer');
+        const rect = element.getBoundingClientRect();
+        const panelBody = document.querySelector('.add-panel-floating .add-panel-body');
+        const panelRect = panelBody.getBoundingClientRect();
+
+        drawer.style.position = 'absolute';
+        drawer.style.top = (rect.bottom - panelRect.top) + 'px';
+        drawer.style.left = '0';
+        drawer.style.width = '100%';
+        drawer.style.display = 'block';
+
+        document.getElementById('drawerOverlay').style.display = 'block';
+    }
+
+    function closeCategoryDrawer() {
+        document.getElementById('categoryDrawer').style.display = 'none';
+        document.getElementById('drawerOverlay').style.display = 'none';
+    }
+
+    // 悬停切换大类
+    function switchMainCategoryHover(mainType, type, event) {
+        // 更新激活状态
+        document.querySelectorAll('#' + type + 'MainCategories .main-category').forEach(cat => {
+            cat.classList.remove('active');
+        });
+        event.currentTarget.classList.add('active');
+        
+        // 更新当前大类
+        currentMainCategory = event.currentTarget.textContent.trim();
+
+        // 隐藏所有子分类
+        document.querySelectorAll('.sub-category-group').forEach(group => {
+            group.style.display = 'none';
+        });
+
+        // 显示对应的子分类
+        if (type === 'expense' || type === 'refund') {
+            if (mainType === 'food') document.getElementById('foodSub').style.display = 'grid';
+            else if (mainType === 'transport') document.getElementById('transportSub').style.display = 'grid';
+            else if (mainType === 'shopping') document.getElementById('shoppingSub').style.display = 'grid';
+            else if (mainType === 'housing') document.getElementById('housingSub').style.display = 'grid';
+            else if (mainType === 'entertainment') document.getElementById('entertainmentSub').style.display = 'grid';
+            else if (mainType === 'medical') document.getElementById('medicalSub').style.display = 'grid';
+            else if (mainType === 'education') document.getElementById('educationSub').style.display = 'grid';
+        } else if (type === 'income') {
+            if (mainType === 'salary') document.getElementById('salarySub').style.display = 'grid';
+            else if (mainType === 'parttime') document.getElementById('parttimeSub').style.display = 'grid';
+            else if (mainType === 'investment') document.getElementById('investmentSub').style.display = 'grid';
+            else if (mainType === 'bonus') document.getElementById('salarySub').style.display = 'grid';
+            else if (mainType === 'refund') document.getElementById('salarySub').style.display = 'grid';
+        } else if (type === 'transfer') {
+            if (mainType === 'transfer') document.getElementById('transferSub').style.display = 'grid';
+        }
+    }
+
+    // ==================== 选择分类 ====================
+    function selectCategory(category) {
+        if (currentSelectorElement) {
+            const type = currentDrawerType;
+            const displayType = currentSelectorElement.classList.contains('left-category') ? 'main' : 'sub';
+            
+            if (displayType === 'main') {
+                // 更新类别显示
+                const mainDisplaySpan = document.getElementById(type + 'MainCategoryDisplay');
+                const mainInput = document.getElementById(type + 'MainCategoryInput');
+                
+                if (mainDisplaySpan) {
+                    mainDisplaySpan.textContent = category;
+                    mainDisplaySpan.style.color = '#ffffff';
+                }
+                if (mainInput) {
+                    mainInput.value = category;
+                }
+                
+                // 清空详细分类
+                const subDisplaySpan = document.getElementById(type + 'SubCategoryDisplay');
+                const subInput = document.getElementById(type + 'SubCategoryInput');
+                
+                if (subDisplaySpan) {
+                    subDisplaySpan.textContent = '选择详细';
+                    subDisplaySpan.style.color = '#808080';
+                }
+                if (subInput) {
+                    subInput.value = '';
+                }
+                
+                // 启用详细选择器
+                const subWrapper = document.getElementById(type + 'SubCategoryWrapper');
+                if (subWrapper) {
+                    subWrapper.classList.remove('disabled');
+                }
+            } else {
+                // 更新详细分类显示
+                const subDisplaySpan = document.getElementById(type + 'SubCategoryDisplay');
+                const subInput = document.getElementById(type + 'SubCategoryInput');
+                const mainInput = document.getElementById(type + 'MainCategoryInput');
+                const mainCategory = mainInput ? mainInput.value : currentMainCategory;
+                const categoryInput = currentSelectorElement.parentElement.querySelector('.category-input');
+                
+                if (subDisplaySpan) {
+                    subDisplaySpan.textContent = category;
+                    subDisplaySpan.style.color = '#ffffff';
+                }
+                if (subInput) {
+                    subInput.value = category;
+                }
+                if (categoryInput) {
+                    categoryInput.value = mainCategory + ' >> ' + category;
+                }
+            }
+        }
+        closeCategoryDrawer();
+    }
+
+    // ==================== 自定义分类 ====================
+    function selectCustomCategory() {
+        const custom = document.getElementById('customCategoryInput').value.trim();
+        if (custom && currentSelectorElement) {
+            const type = currentDrawerType;
+            const displayType = currentSelectorElement.classList.contains('left-category') ? 'main' : 'sub';
+            
+            if (displayType === 'main') {
+                // 更新类别显示
+                const mainDisplaySpan = document.getElementById(type + 'MainCategoryDisplay');
+                const mainInput = document.getElementById(type + 'MainCategoryInput');
+                
+                if (mainDisplaySpan) {
+                    mainDisplaySpan.textContent = custom;
+                    mainDisplaySpan.style.color = '#ffffff';
+                }
+                if (mainInput) {
+                    mainInput.value = custom;
+                }
+                
+                // 清空详细分类
+                const subDisplaySpan = document.getElementById(type + 'SubCategoryDisplay');
+                const subInput = document.getElementById(type + 'SubCategoryInput');
+                
+                if (subDisplaySpan) {
+                    subDisplaySpan.textContent = '选择详细';
+                    subDisplaySpan.style.color = '#808080';
+                }
+                if (subInput) {
+                    subInput.value = '';
+                }
+                
+                // 启用详细选择器
+                const subWrapper = document.getElementById(type + 'SubCategoryWrapper');
+                if (subWrapper) {
+                    subWrapper.classList.remove('disabled');
+                }
+            } else {
+                // 更新详细分类显示
+                const subDisplaySpan = document.getElementById(type + 'SubCategoryDisplay');
+                const subInput = document.getElementById(type + 'SubCategoryInput');
+                const mainInput = document.getElementById(type + 'MainCategoryInput');
+                const mainCategory = mainInput ? mainInput.value : currentMainCategory;
+                const categoryInput = currentSelectorElement.parentElement.querySelector('.category-input');
+                
+                if (subDisplaySpan) {
+                    subDisplaySpan.textContent = custom;
+                    subDisplaySpan.style.color = '#ffffff';
+                }
+                if (subInput) {
+                    subInput.value = custom;
+                }
+                if (categoryInput) {
+                    categoryInput.value = mainCategory + ' >> ' + custom;
+                }
+            }
+
+            document.getElementById('customCategoryInput').value = '';
+            closeCategoryDrawer();
+        }
+    }
+
+    // 点击遮罩层关闭抽屉
+    document.getElementById('drawerOverlay').addEventListener('click', function() {
+        closeCategoryDrawer();
+        closeAccountDrawer();
+        closeAddCategoryDialog();
+    });
+
+    // ==================== 添加分类对话框 ====================
+    function openAddCategoryDialog(event) {
+        const dialog = document.getElementById('addCategoryDialog');
+        const btn = event.currentTarget;
+        const rect = btn.getBoundingClientRect();
+        const panelBody = document.querySelector('.add-panel-floating .add-panel-body');
+        const panelRect = panelBody.getBoundingClientRect();
+
+        // 计算相对于面板主体的位置
+        const relativeTop = rect.bottom - panelRect.top;
+        const relativeLeft = rect.left - panelRect.left;
+
+        dialog.style.position = 'absolute';
+        dialog.style.top = relativeTop + 'px';
+        dialog.style.left = relativeLeft + 'px';
+        dialog.style.display = 'block';
+    }
+
+    function closeAddCategoryDialog() {
+        document.getElementById('addCategoryDialog').style.display = 'none';
+        // 关闭所有下拉菜单
+        document.getElementById('mainCategoryDropdown').style.display = 'none';
+        document.getElementById('subCategoryDropdown').style.display = 'none';
+    }
+
+    function toggleCategoryDropdown(type) {
+        const dropdown = document.getElementById(type + 'CategoryDropdown');
+        if (dropdown.style.display === 'none' || dropdown.style.display === '') {
+            dropdown.style.display = 'block';
+        } else {
+            dropdown.style.display = 'none';
+        }
+    }
+
+    function selectMainCategory(category) {
+        const displaySpan = document.getElementById('mainCategoryDisplay');
+        const hiddenInput = document.getElementById('mainCategoryInput');
+        displaySpan.textContent = category;
+        hiddenInput.value = category;
+        displaySpan.style.color = '#ffffff';
+        document.getElementById('mainCategoryDropdown').style.display = 'none';
+    }
+
+    function addCustomMainCategory() {
+        const customInput = document.getElementById('customMainCategory');
+        const customCategory = customInput.value.trim();
+        if (customCategory) {
+            selectMainCategory(customCategory);
+            customInput.value = '';
+        }
+    }
+
+    function addCustomSubCategory() {
+        const customInput = document.getElementById('customSubCategory');
+        const customCategory = customInput.value.trim();
+        if (customCategory) {
+            const displaySpan = document.getElementById('subCategoryDisplay');
+            const hiddenInput = document.getElementById('subCategoryInput');
+            displaySpan.textContent = customCategory;
+            hiddenInput.value = customCategory;
+            displaySpan.style.color = '#ffffff';
+            document.getElementById('subCategoryDropdown').style.display = 'none';
+            customInput.value = '';
+        }
+    }
+
+    function saveNewCategory() {
+        const mainCategory = document.getElementById('mainCategoryInput').value;
+        const subCategory = document.getElementById('subCategoryInput').value;
+        
+        if (mainCategory && subCategory) {
+            // 这里可以添加保存分类的逻辑
+            alert('分类保存成功：' + mainCategory + ' >> ' + subCategory);
+            closeAddCategoryDialog();
+        } else {
+            alert('请选择或输入类别和详细分类');
+        }
+    }
+
+    // 点击其他地方关闭下拉菜单
+    document.addEventListener('click', function(event) {
+        // 检查点击的目标是否在下拉菜单内部或触发按钮上
+        const isMainDropdownClick = event.target.closest('#mainCategoryDropdown');
+        const isMainSelectorClick = event.target.closest('#mainCategoryDisplay').parentElement;
+        const isSubDropdownClick = event.target.closest('#subCategoryDropdown');
+        const isSubSelectorClick = event.target.closest('#subCategoryDisplay').parentElement;
+        
+        // 如果点击不在下拉菜单内也不在触发按钮上，则关闭所有下拉菜单
+        if (!isMainDropdownClick && !isMainSelectorClick) {
+            document.getElementById('mainCategoryDropdown').style.display = 'none';
+        }
+        if (!isSubDropdownClick && !isSubSelectorClick) {
+            document.getElementById('subCategoryDropdown').style.display = 'none';
+        }
+    });
+
+    // ==================== 表单提交 ====================
+    document.addEventListener('DOMContentLoaded', function() {
+        setDefaultDateForCurrentForm();
+
+        // 为日期输入框添加事件监听器，选择日期后文字变白色
+        document.querySelectorAll('input[type="date"]').forEach(input => {
+            input.addEventListener('change', function() {
+                if (this.value) {
+                    this.style.color = '#ffffff';
+                } else {
+                    this.style.color = '#808080';
+                }
+            });
+        });
+
+        // 为金额输入框添加事件监听器，输入金额后文字变白色
+        document.querySelectorAll('.amount-input').forEach(input => {
+            input.addEventListener('input', function() {
+                if (this.value) {
+                    this.style.color = '#ffffff';
+                } else {
+                    this.style.color = '#808080';
+                }
+            });
+        });
+
+        // 为手续费输入框添加事件监听器，输入金额后文字变白色
+        document.querySelectorAll('input[name="fee"]').forEach(input => {
+            input.addEventListener('input', function() {
+                if (this.value) {
+                    this.style.color = '#ffffff';
+                } else {
+                    this.style.color = '#808080';
+                }
+            });
+        });
+
+        document.querySelectorAll('.dynamic-form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const formData = new FormData(this);
+                const type = this.dataset.type;
+
+                fetch('/add', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showSuccessOverlay();
+                        this.reset();
+                        setDefaultDateForCurrentForm();
+
+                        if (typeof hideAddPanel === 'function') {
+                            hideAddPanel();
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('错误:', error);
+                    alert('记账失败，请重试');
+                });
+            });
+        });
+    });
+
+// ==================== 账户选择抽屉 ====================
+
+function closeAccountDrawer() {
+    const fromDrawer = document.getElementById('fromAccountDrawer');
+    const toDrawer = document.getElementById('toAccountDrawer');
+    if (fromDrawer) fromDrawer.style.display = 'none';
+    if (toDrawer) toDrawer.style.display = 'none';
+    currentDrawerId = null;
+    currentSelectorElement = null;
+}
+
+function openAccountDrawer(type, element, event) {
+    // 阻止事件冒泡，防止立即被全局点击事件关闭
+    if (event) event.stopPropagation();
+
+    // 如果已经有打开的抽屉，先关闭它
+    if (currentDrawerId) {
+        document.getElementById(currentDrawerId).style.display = 'none';
+    }
+
+    // 设置当前打开的抽屉ID
+    currentDrawerId = type + 'AccountDrawer';
+    currentSelectorElement = element;
+
+    const drawer = document.getElementById(currentDrawerId);
+    const wrapper = element.parentElement; // 获取包含按钮和抽屉的包装器
+    
+    // 将抽屉定位为相对于包装器的绝对位置
+    wrapper.style.position = 'relative';
+    drawer.style.position = 'absolute';
+    drawer.style.top = '100%'; // 直接放在按钮下方
+    drawer.style.left = '0';
+    drawer.style.width = '100%';
+    drawer.style.zIndex = '1000'; // 确保抽屉在最上层
+    drawer.style.display = 'block';
+}
+
+function selectAccount(type, accountValue, accountName, ev) {
+    // 阻止事件冒泡
+    if (ev) ev.stopPropagation();
+
+    if (type === 'from') {
+        const displaySpan = document.getElementById('fromAccountDisplay');
+        displaySpan.textContent = accountName;
+        document.getElementById('fromAccountInput').value = accountValue;
+        // 关闭转出账户抽屉
+        document.getElementById('fromAccountDrawer').style.display = 'none';
+        // 改变文字颜色为白色
+        displaySpan.style.color = '#ffffff';
+    } else if (type === 'to') {
+        const displaySpan = document.getElementById('toAccountDisplay');
+        displaySpan.textContent = accountName;
+        document.getElementById('toAccountInput').value = accountValue;
+        // 关闭转入账户抽屉
+        document.getElementById('toAccountDrawer').style.display = 'none';
+        // 改变文字颜色为白色
+        displaySpan.style.color = '#ffffff';
+    } else if (type === 'expense') {
+        const displaySpan = document.getElementById('expenseAccountDisplay');
+        displaySpan.textContent = accountName;
+        document.getElementById('expenseAccountInput').value = accountValue;
+        // 关闭付款账户抽屉
+        document.getElementById('expenseAccountDrawer').style.display = 'none';
+        // 改变文字颜色为白色
+        displaySpan.style.color = '#ffffff';
+    } else if (type === 'income') {
+        const displaySpan = document.getElementById('incomeAccountDisplay');
+        displaySpan.textContent = accountName;
+        document.getElementById('incomeAccountInput').value = accountValue;
+        // 关闭收款账户抽屉
+        document.getElementById('incomeAccountDrawer').style.display = 'none';
+        // 改变文字颜色为白色
+        displaySpan.style.color = '#ffffff';
+    } else if (type === 'balance') {
+        const displaySpan = document.getElementById('balanceAccountDisplay');
+        displaySpan.textContent = accountName;
+        document.getElementById('balanceAccountInput').value = accountValue;
+        // 关闭账户抽屉
+        document.getElementById('balanceAccountDrawer').style.display = 'none';
+        // 改变文字颜色为白色
+        displaySpan.style.color = '#ffffff';
+    } else if (type === 'refund') {
+        const displaySpan = document.getElementById('refundAccountDisplay');
+        displaySpan.textContent = accountName;
+        document.getElementById('refundAccountInput').value = accountValue;
+        // 关闭退款账户抽屉
+        document.getElementById('refundAccountDrawer').style.display = 'none';
+        // 改变文字颜色为白色
+        displaySpan.style.color = '#ffffff';
+    }
+    currentDrawerId = null;
+    currentSelectorElement = null;
+}
+
+    // 点击其他地方关闭所有抽屉
+document.addEventListener('click', function(event) {
+    // 检查点击的目标是否是左侧add按钮或add面板
+    const isAddButtonClick = event.target.closest('.add-button');
+    const isAddPanelClick = event.target.closest('#addPanel');
+    
+    // 如果点击的是add按钮或add面板，不执行关闭操作
+    if (isAddButtonClick || isAddPanelClick) {
+        return;
+    }
+    
+    // 检查点击的目标是否在抽屉内部或触发按钮上
+    const isFromDrawerClick = event.target.closest('#fromAccountDrawer');
+    const isToDrawerClick = event.target.closest('#toAccountDrawer');
+    const isFromSelectorClick = event.target.closest('.left-account');
+    const isToSelectorClick = event.target.closest('.right-account');
+
+    // 如果点击不在任何抽屉内，也不在触发按钮上，则关闭所有抽屉
+    if (!isFromDrawerClick && !isToDrawerClick && !isFromSelectorClick && !isToSelectorClick) {
+        const fromDrawer = document.getElementById('fromAccountDrawer');
+        const toDrawer = document.getElementById('toAccountDrawer');
+        if (fromDrawer) fromDrawer.style.display = 'none';
+        if (toDrawer) toDrawer.style.display = 'none';
+        currentDrawerId = null;
+        currentSelectorElement = null;
+    }
+    
+    // 关闭所有类别下拉菜单
+    const isCategoryDropdownClick = event.target.closest('.category-dropdown');
+    const isCategorySelectorClick = event.target.closest('.category-selector');
+    
+    if (!isCategoryDropdownClick && !isCategorySelectorClick) {
+        document.querySelectorAll('.category-dropdown').forEach(dropdown => {
+            dropdown.style.display = 'none';
+        });
+    }
+    
+    // 关闭所有账户抽屉
+    const isAccountDrawerClick = event.target.closest('.account-drawer');
+    const isAccountSelectorClick = event.target.closest('.account-selector');
+    
+    if (!isAccountDrawerClick && !isAccountSelectorClick) {
+        document.querySelectorAll('.account-drawer').forEach(drawer => {
+            drawer.style.display = 'none';
+        });
+        currentDrawerId = null;
+        currentSelectorElement = null;
+    }
+});
+
+// ==================== 类别选择功能 ====================
+
+// 显示/隐藏类别下拉菜单
+function toggleCategoryDropdown(type, event) {
+    if (event) event.stopPropagation();
+    
+    // 关闭所有其他下拉菜单
+    document.querySelectorAll('.category-dropdown').forEach(dropdown => {
+        dropdown.style.display = 'none';
+    });
+    
+    // 显示当前下拉菜单
+    const dropdown = document.getElementById(type + 'MainCategoryDropdown');
+    if (dropdown) {
+        dropdown.style.display = 'block';
+        
+        // 填充类别选项
+        populateCategoryDropdown(type);
+    }
+}
+
+// 填充类别下拉菜单
+function populateCategoryDropdown(type) {
+    const dropdown = document.getElementById(type + 'MainCategoryDropdown');
+    if (!dropdown) return;
+    
+    // 清空现有内容
+    dropdown.innerHTML = '';
+    
+    // 只有支出和收入显示"最近"选项
+    if (type !== 'refund') {
+        // 添加"最近"选项
+        const recentItem = document.createElement('div');
+        recentItem.className = 'dropdown-item';
+        recentItem.textContent = '最近';
+        recentItem.onclick = function() {
+            showRecentCategories(type);
+        };
+        dropdown.appendChild(recentItem);
+    }
+    
+    // 添加类别选项
+    const categories = categoryData[type] || [];
+    categories.forEach(category => {
+        const item = document.createElement('div');
+        item.className = 'dropdown-item';
+        item.textContent = category;
+        item.onclick = function() {
+            selectCategory(type, category);
+        };
+        dropdown.appendChild(item);
+    });
+    
+    // 添加自定义类别输入
+    const customInputDiv = document.createElement('div');
+    customInputDiv.className = 'dropdown-item custom-input';
+    customInputDiv.innerHTML = `
+        <div class="input-with-check">
+            <input type="text" id="${type}CustomMainCategory" placeholder="输入新类别">
+            <button onclick="addCustomCategory('${type}')">✔</button>
+        </div>
+    `;
+    dropdown.appendChild(customInputDiv);
+}
+
+// 显示最近分类
+function showRecentCategories(type) {
+    const dropdown = document.getElementById(type + 'MainCategoryDropdown');
+    if (!dropdown) return;
+    
+    // 清空现有内容
+    dropdown.innerHTML = '';
+    
+    // 添加返回按钮
+    const backItem = document.createElement('div');
+    backItem.className = 'dropdown-item';
+    backItem.textContent = '返回';
+    backItem.onclick = function() {
+        populateCategoryDropdown(type);
+    };
+    dropdown.appendChild(backItem);
+    
+    // 添加最近分类选项
+    const recent = recentCategories[type] || [];
+    if (recent.length > 0) {
+        recent.forEach(item => {
+            const categoryItem = document.createElement('div');
+            categoryItem.className = 'dropdown-item';
+            categoryItem.textContent = item.subCategory;
+            categoryItem.onclick = function() {
+                // 选择类别
+                const mainDisplaySpan = document.getElementById(type + 'MainCategoryDisplay');
+                const mainInput = document.getElementById(type + 'MainCategoryInput');
+                
+                if (mainDisplaySpan) {
+                    mainDisplaySpan.textContent = item.mainCategory;
+                    mainDisplaySpan.style.color = '#ffffff';
+                }
+                if (mainInput) {
+                    mainInput.value = item.mainCategory;
+                }
+                
+                // 选择子类别
+                const subDisplaySpan = document.getElementById(type + 'SubCategoryDisplay');
+                const subInput = document.getElementById(type + 'SubCategoryInput');
+                const categoryInput = document.querySelector(`[data-type="${type}"] .category-input`);
+                
+                if (subDisplaySpan) {
+                    subDisplaySpan.textContent = item.subCategory;
+                    subDisplaySpan.style.color = '#ffffff';
+                }
+                if (subInput) {
+                    subInput.value = item.subCategory;
+                }
+                if (categoryInput) {
+                    categoryInput.value = item.mainCategory + ' >> ' + item.subCategory;
+                }
+                
+                // 启用详细选择器
+                const subWrapper = document.getElementById(type + 'SubCategoryWrapper');
+                if (subWrapper) {
+                    subWrapper.classList.remove('disabled');
+                }
+                
+                // 关闭下拉菜单
+                dropdown.style.display = 'none';
+            };
+            dropdown.appendChild(categoryItem);
+        });
+    } else {
+        // 没有最近分类
+        const emptyItem = document.createElement('div');
+        emptyItem.className = 'dropdown-item';
+        emptyItem.textContent = '暂无最近分类';
+        emptyItem.style.color = '#808080';
+        dropdown.appendChild(emptyItem);
+        
+        // 添加提示信息
+        const tipItem = document.createElement('div');
+        tipItem.className = 'dropdown-item';
+        tipItem.textContent = '请先选择一个类别';
+        tipItem.style.color = '#808080';
+        dropdown.appendChild(tipItem);
+    }
+}
+
+// 选择类别
+function selectCategory(type, category) {
+    // 更新类别显示
+    const mainDisplaySpan = document.getElementById(type + 'MainCategoryDisplay');
+    const mainInput = document.getElementById(type + 'MainCategoryInput');
+    
+    if (mainDisplaySpan) {
+        mainDisplaySpan.textContent = category;
+        mainDisplaySpan.style.color = '#ffffff';
+    }
+    if (mainInput) {
+        mainInput.value = category;
+    }
+    
+    // 清空详细分类
+    const subDisplaySpan = document.getElementById(type + 'SubCategoryDisplay');
+    const subInput = document.getElementById(type + 'SubCategoryInput');
+    
+    if (subDisplaySpan) {
+        subDisplaySpan.textContent = '选择详细';
+        subDisplaySpan.style.color = '#808080';
+    }
+    if (subInput) {
+        subInput.value = '';
+    }
+    
+    // 启用详细选择器
+    const subWrapper = document.getElementById(type + 'SubCategoryWrapper');
+    if (subWrapper) {
+        subWrapper.classList.remove('disabled');
+    }
+    
+    // 关闭下拉菜单
+    const dropdown = document.getElementById(type + 'MainCategoryDropdown');
+    if (dropdown) {
+        dropdown.style.display = 'none';
+    }
+}
+
+// 添加自定义类别
+function addCustomCategory(type) {
+    const customInput = document.getElementById(type + 'CustomMainCategory');
+    const customCategory = customInput.value.trim();
+    
+    if (customCategory) {
+        // 添加到类别数据
+        if (!categoryData[type]) {
+            categoryData[type] = [];
+        }
+        if (!categoryData[type].includes(customCategory)) {
+            categoryData[type].push(customCategory);
+        }
+        
+        // 选择新类别
+        selectCategory(type, customCategory);
+        
+        // 清空输入
+        customInput.value = '';
+    }
+}
+
+// 显示/隐藏子类别下拉菜单
+function toggleSubCategoryDropdown(type, event) {
+    if (event) event.stopPropagation();
+    
+    // 检查是否已选择类别
+    const mainInput = document.getElementById(type + 'MainCategoryInput');
+    const mainCategory = mainInput ? mainInput.value : '';
+    
+    if (!mainCategory) {
+        return; // 未选择类别，不显示子类别
+    }
+    
+    // 关闭所有其他下拉菜单
+    document.querySelectorAll('.category-dropdown').forEach(dropdown => {
+        dropdown.style.display = 'none';
+    });
+    
+    // 显示当前下拉菜单
+    const dropdown = document.getElementById(type + 'SubCategoryDropdown');
+    if (dropdown) {
+        dropdown.style.display = 'block';
+        
+        // 填充子类别选项
+        populateSubCategoryDropdown(type, mainCategory);
+    }
+}
+
+// 填充子类别下拉菜单
+function populateSubCategoryDropdown(type, mainCategory) {
+    const dropdown = document.getElementById(type + 'SubCategoryDropdown');
+    if (!dropdown) return;
+    
+    // 清空现有内容
+    dropdown.innerHTML = '';
+    
+    // 添加子类别选项
+    const subCategories = subCategoryData[mainCategory] || [];
+    subCategories.forEach(subCategory => {
+        const item = document.createElement('div');
+        item.className = 'dropdown-item';
+        item.textContent = subCategory;
+        item.onclick = function() {
+            selectSubCategory(type, subCategory);
+        };
+        dropdown.appendChild(item);
+    });
+    
+    // 添加自定义子类别输入
+    const customInputDiv = document.createElement('div');
+    customInputDiv.className = 'dropdown-item custom-input';
+    customInputDiv.innerHTML = `
+        <div class="input-with-check">
+            <input type="text" id="${type}CustomSubCategory" placeholder="输入新详细分类">
+            <button onclick="addCustomSubCategory('${type}')">✔</button>
+        </div>
+    `;
+    dropdown.appendChild(customInputDiv);
+}
+
+// 选择子类别
+function selectSubCategory(type, subCategory) {
+    // 更新子类别显示
+    const subDisplaySpan = document.getElementById(type + 'SubCategoryDisplay');
+    const subInput = document.getElementById(type + 'SubCategoryInput');
+    const mainInput = document.getElementById(type + 'MainCategoryInput');
+    const mainCategory = mainInput ? mainInput.value : '';
+    const categoryInput = document.querySelector(`[data-type="${type}"] .category-input`);
+    
+    if (subDisplaySpan) {
+        subDisplaySpan.textContent = subCategory;
+        subDisplaySpan.style.color = '#ffffff';
+    }
+    if (subInput) {
+        subInput.value = subCategory;
+    }
+    if (categoryInput) {
+        categoryInput.value = mainCategory + ' >> ' + subCategory;
+    }
+    
+    // 更新最近分类
+    updateRecentCategory(type, mainCategory, subCategory);
+    
+    // 关闭下拉菜单
+    const dropdown = document.getElementById(type + 'SubCategoryDropdown');
+    if (dropdown) {
+        dropdown.style.display = 'none';
+    }
+}
+
+// 添加自定义子类别
+function addCustomSubCategory(type) {
+    const customInput = document.getElementById(type + 'CustomSubCategory');
+    const customSubCategory = customInput.value.trim();
+    const mainInput = document.getElementById(type + 'MainCategoryInput');
+    const mainCategory = mainInput ? mainInput.value : '';
+    
+    if (customSubCategory && mainCategory) {
+        // 添加到子类别数据
+        if (!subCategoryData[mainCategory]) {
+            subCategoryData[mainCategory] = [];
+        }
+        if (!subCategoryData[mainCategory].includes(customSubCategory)) {
+            subCategoryData[mainCategory].push(customSubCategory);
+        }
+        
+        // 选择新子类别
+        selectSubCategory(type, customSubCategory);
+        
+        // 清空输入
+        customInput.value = '';
+    }
+}
+
+// 处理打印小票按钮的点击事件
+document.addEventListener('DOMContentLoaded', function() {
+    // 为所有打印小票按钮添加点击事件监听器
+    document.querySelectorAll('.btn-print-receipt').forEach(button => {
+        button.addEventListener('click', function() {
+            // 找到当前按钮所在的表单
+            const form = this.closest('form');
+            
+            // 触发表单验证
+            if (form.checkValidity()) {
+                // 表单验证通过，执行打印小票的逻辑
+                // 这里可以添加打印小票的代码
+                console.log('打印小票');
+            } else {
+                // 表单验证失败，显示错误信息
+                form.reportValidity();
+            }
+        });
+    });
+});
+
+</script>
+
